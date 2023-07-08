@@ -1,7 +1,7 @@
-test_that("matrixset properties works", {
+test_that("matrixset properties works for Matrix", {
 
 
-  m <- matrix(1:10, 2, 5)
+  m <- Matrix::Matrix(1:10, 2, 5)
   ms <- matrixset(foo = m)
   try(rownames(ms) <- c("a", "b"), silent = TRUE)
   expect_identical(rownames(ms), c("a", "b"))
@@ -48,12 +48,17 @@ test_that("matrixset properties works", {
   expect_identical(dimnames(ms), list(c("c", "d"), letters[1:5]))
 
 
-  student_results2 <- student_results
-  student_results3 <- student_results
+  student_results_M <- mutate_matrix(student_results,
+                                     failure = Matrix::Matrix(matrix_elm(student_results, 1)),
+                                     remedial = Matrix::Matrix(matrix_elm(student_results, 2)))
+
+
+  student_results2 <- student_results_M
+  student_results3 <- student_results_M
 
   row_traits(student_results3) <- c("cl", "prof", "prev_Y_score")
 
-  ri <- row_info(student_results)
+  ri <- row_info(student_results_M)
   colnames(ri) <- c("rn", "cl", "prof", "prev_Y_score")
 
   expect_error(row_info(student_results2) <- ri,
@@ -71,23 +76,23 @@ test_that("matrixset properties works", {
   ri2 <- ri
   ri2[,4] <- sample(unlist(ri[,4]))
 
-  student_results2 <- student_results
+  student_results2 <- student_results_M
   row_info(student_results2) <- ri2
   expect_equal(row_info(student_results2), ri2)
   expect_equal(row_traits(student_results2), colnames(ri2)[-1])
 
-  student_results2 <- student_results
+  student_results2 <- student_results_M
   row_info(student_results2)[,4] <- ri2[, 4]
   expect_equal(row_info(student_results2), ri2, ignore_attr = TRUE)
 
-  student_results2 <- student_results
+  student_results2 <- student_results_M
   expect_error(row_info(student_results2) <- ri2[1:10,],
                "Not all rows names are provided in meta info")
   expect_error(row_info(student_results2)[11:20,] <- ri2[1:10,],
                "Not all rows names are provided in meta info")
   ri3 <- ri
   ri3[1:10,] <- ri2[1:10,]
-  colnames(ri3) <- c(".rowname", row_traits(student_results))
+  colnames(ri3) <- c(".rowname", row_traits(student_results_M))
   row_info(student_results2)[1:10,] <- ri2[1:10,]
   expect_equal(row_info(student_results2), ri3)
 
@@ -96,10 +101,10 @@ test_that("matrixset properties works", {
 
 
 
-  student_results2 <- row_group_by(student_results, class, teacher)
+  student_results2 <- row_group_by(student_results_M, class, teacher)
 
 
-  ri <- row_info(student_results)
+  ri <- row_info(student_results_M)
   colnames(ri) <- c("rn", "cl", "prof", "prev_Y_score")
 
   expect_error(row_info(student_results2) <- ri,
@@ -109,15 +114,15 @@ test_that("matrixset properties works", {
   expect_warning(row_info(student_results2) <- ri,
                  "Row groups lost after row annotation update")
 
-  student_results2 <- row_group_by(student_results, class, teacher)
+  student_results2 <- row_group_by(student_results_M, class, teacher)
   suppressWarnings(row_info(student_results2) <- ri)
   expect_null(row_groups(student_results2))
   expect_equal(row_info(student_results2), ri)
   expect_equal(row_traits(student_results2), colnames(ri)[-1])
 
 
-  ri <- row_info(student_results)
-  student_results2 <- row_group_by(student_results, class, teacher)
+  ri <- row_info(student_results_M)
+  student_results2 <- row_group_by(student_results_M, class, teacher)
   meta <- row_group_meta(student_results2)
   ri2 <- ri
   ri2[,4] <- sample(unlist(ri[,4]))
@@ -128,14 +133,14 @@ test_that("matrixset properties works", {
   expect_equal(row_traits(student_results2), colnames(ri)[-1])
 
 
-  student_results2 <- row_group_by(student_results, class, teacher)
+  student_results2 <- row_group_by(student_results_M, class, teacher)
   meta <- row_group_meta(student_results2)
   suppressMessages(row_info(student_results2)[,4] <- ri2[, 4])
   expect_equal(row_group_meta(student_results2), meta)
   expect_equal(row_info(student_results2), ri2, ignore_attr = TRUE)
 
 
-  student_results2 <- row_group_by(student_results, class, teacher)
+  student_results2 <- row_group_by(student_results_M, class, teacher)
   meta <- row_group_meta(student_results2)
   expect_error(row_info(student_results2) <- ri2[1:10,],
                "Not all rows names are provided in meta info")
@@ -143,7 +148,7 @@ test_that("matrixset properties works", {
                "Not all rows names are provided in meta info")
   ri3 <- ri
   ri3[1:10,] <- ri2[1:10,]
-  colnames(ri3) <- c(".rowname", row_traits(student_results))
+  colnames(ri3) <- c(".rowname", row_traits(student_results_M))
   suppressMessages(row_info(student_results2)[1:10,] <- ri2[1:10,])
   expect_equal(row_group_meta(student_results2), meta)
   expect_equal(row_info(student_results2), ri3, ignore_attr = TRUE)

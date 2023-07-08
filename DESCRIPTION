@@ -1,6 +1,6 @@
 Package: matrixset
-Title: Creating and Manipulating Matrix Ensemble
-Version: 0.1.1
+Title: Creating, Manipulating and Annotating Matrix Ensemble
+Version: 0.2.0
 Authors@R: 
     person(given = "Pascal",
            family = "Croteau",
@@ -11,8 +11,8 @@ Description: Creates an object that stores a matrix ensemble, matrices
   annotated. Matrices must have the same dimension and dimnames. Operators to
   manipulate these objects are provided as well as mechanisms to apply
   functions to these objects.
-Imports: cli, crayon, dplyr, methods, pillar, purrr, R6, Rcpp, rlang,
-        stringr, tibble, tidyr, tidyselect, vctrs
+Imports: cli, crayon, dplyr, Matrix, methods, pillar, purrr, R6, Rcpp,
+        rlang, stringr, tibble, tidyr, tidyselect, vctrs
 License: MIT + file LICENSE
 URL: https://github.com/pascalcroteau/matrixset
 BugReports: https://github.com/pascalcroteau/matrixset/issues
@@ -26,8 +26,8 @@ Depends: R (>= 4.0)
 VignetteBuilder: knitr
 LinkingTo: Rcpp
 NeedsCompilation: yes
-Packaged: 2023-05-28 15:06:55 UTC; pc
+Packaged: 2023-07-08 12:16:21 UTC; pc
 Author: Pascal Croteau [aut, cre, cph]
 Maintainer: Pascal Croteau <croteaupascl@gmail.com>
 Repository: CRAN
-Date/Publication: 2023-05-29 19:30:02 UTC
+Date/Publication: 2023-07-08 12:40:02 UTC

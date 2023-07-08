@@ -10,17 +10,19 @@ norm_call <- function(quo, var, .convert_name = TRUE)
   }
 
   colon <- FALSE
+  expr_orig <- expr
   if (rlang::is_call(expr, "::")) {
-    pkg <- expr[[2]]
+    # pkg <- expr[[2]]
     expr <- expr[[3]]
     colon <- TRUE
   }
   if (is.name(expr)) {
     if (!.convert_name)
       stop("function names are not accepted in this context", call. = FALSE)
-    expr <- rlang::call2(expr, !!!rlang::syms(var))
+    # expr <- rlang::call2(expr, !!!rlang::syms(var))
+    expr <- if (colon) rlang::call2(expr_orig, !!!rlang::syms(var)) else rlang::call2(expr, !!!rlang::syms(var))
   }
-  if (colon) expr <- call("::", pkg, expr)
+  # if (colon) expr <- call("::", pkg, expr)
   rlang::quo_set_expr(quo, expr)
 }
 
@@ -35,6 +37,16 @@ subset_ij <- function(m, i, j) {
   out <- m[i,j]
   names(out) <- nm
   out
+}
+
+
+
+
+assess_fun_names <- function(nms, tag, simplify)
+{
+  if (is.na(tag) || !simplify) return(invisible(NULL))
+  if (any(nms == tag))
+    stop(paste("the function results can't be named", shQuote(tag)))
 }
 
 
@@ -102,6 +114,9 @@ eval_fun_workhorse <- function(margin, ms, ..., matidx, row_first, list_input,
   mat_lab <- paste0(var_lab, seq_mats)
 
   nmfn <- names(quosures)
+  tag <- switch(margin, "row" = .rowtag(ms), "col"= .coltag(ms), "mat" = NA_character_)
+  assess_fun_names(nmfn, tag, .simplify)
+
   nfn <- length(quosures)
   for (i in seq_len(nfn)) {
     quosures[[i]] <- norm_call(quosures[[i]], var_lab)
@@ -821,6 +836,7 @@ NULL
 apply_row <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
                       .input_list = FALSE)
   if (.matrix_wise) {
+    warn_if(.matrix_wise, .input_list)
     .apply_row(.ms, ..., .matrix = .matrix)
   } else {
     .mapply_row(.ms, ..., .matrix = .matrix, .list_input = .input_list)
@@ -831,6 +847,7 @@ apply_row <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
 apply_row_dfl <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
                           .input_list = FALSE)
   if (.matrix_wise) {
+    warn_if(.matrix_wise, .input_list)
     .apply_row_dfl(.ms, ..., .matrix = .matrix)
   } else {
     .mapply_row_dfl(.ms, ..., .matrix = .matrix, .list_input = .input_list)
@@ -841,6 +858,7 @@ apply_row_dfl <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
 apply_row_dfw <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
                           .input_list = FALSE)
   if (.matrix_wise) {
+    warn_if(.matrix_wise, .input_list)
     .apply_row_dfw(.ms, ..., .matrix = .matrix)
   } else {
     .mapply_row_dfw(.ms, ..., .matrix = .matrix, .list_input = .input_list)
@@ -852,6 +870,7 @@ apply_row_dfw <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
 apply_column <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
                          .input_list = FALSE)
   if (.matrix_wise) {
+    warn_if(.matrix_wise, .input_list)
     .apply_column(.ms, ..., .matrix = .matrix)
   } else {
     .mapply_column(.ms, ..., .matrix = .matrix, .list_input = .input_list)
@@ -862,6 +881,7 @@ apply_column <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
 apply_column_dfl <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
                              .input_list = FALSE)
   if (.matrix_wise) {
+    warn_if(.matrix_wise, .input_list)
     .apply_column_dfl(.ms, ..., .matrix = .matrix)
   } else {
     .mapply_column_dfl(.ms, ..., .matrix = .matrix, .list_input = .input_list)
@@ -872,6 +892,7 @@ apply_column_dfl <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
 apply_column_dfw <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
                              .input_list = FALSE)
   if (.matrix_wise) {
+    warn_if(.matrix_wise, .input_list)
     .apply_column_dfw(.ms, ..., .matrix = .matrix)
   } else {
     .mapply_column_dfw(.ms, ..., .matrix = .matrix, .list_input = .input_list)
@@ -883,6 +904,7 @@ apply_column_dfw <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
 apply_matrix <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
                       .input_list = FALSE)
   if (.matrix_wise) {
+    warn_if(.matrix_wise, .input_list)
     .apply_mat(.ms, ..., .matrix = .matrix)
   } else {
     .mapply_mat(.ms, ..., .matrix = .matrix, .list_input = .input_list)
@@ -894,6 +916,7 @@ apply_matrix <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
 apply_matrix_dfl <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
                           .input_list = FALSE)
   if (.matrix_wise) {
+    warn_if(.matrix_wise, .input_list)
     .apply_mat_dfl(.ms, ..., .matrix = .matrix)
   } else {
     .mapply_mat_dfl(.ms, ..., .matrix = .matrix, .list_input = .input_list)
@@ -905,6 +928,7 @@ apply_matrix_dfl <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
 apply_matrix_dfw <- function(.ms, ..., .matrix = NULL, .matrix_wise = TRUE,
                           .input_list = FALSE)
   if (.matrix_wise) {
+    warn_if(.matrix_wise, .input_list)
     .apply_mat_dfw(.ms, ..., .matrix = .matrix)
   } else {
     .mapply_mat_dfw(.ms, ..., .matrix = .matrix, .list_input = .input_list)

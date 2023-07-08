@@ -9,7 +9,15 @@ normalize_expand <- function(expand, nms_matrix, nmatrix)
       warning("More than one logical value provided to 'expand'. Keeping the first one only")
     expand <- expand[1]
 
-    expand <- if (is.na(expand) || expand) rep(list(NA), nmatrix) else NULL
+    expand <- if (is.na(expand)) {
+      rep(list(NA), nmatrix)
+    } else if (!expand) {
+      NULL
+    } else {
+      expand
+    }
+
+    # expand <- if (is.na(expand) || expand) rep(list(NA), nmatrix) else NULL
   } else if (is.vector(expand)) {
     if (is.list(expand)) {
       expd_nms <- names(expand)
@@ -183,6 +191,28 @@ matrices_from_dots <- function(...)
 
 
 
+MATRIX <- function(dat, nrow, ncol, is_Matrix = FALSE)
+{
+  if (is_Matrix) {
+    Matrix::Matrix(0, nrow=nrow, ncol=ncol)
+  } else {
+    matrix(dat, nrow=nrow, ncol=ncol)
+  }
+}
+
+
+
+set_expand_value <- function(is_Matrix, exp_val)
+{
+  if (is.logical(exp_val) && !is.na(exp_val)) {
+    if (is_Matrix) return(0) else return(NA)
+  }
+  exp_val
+  # if (is_Matrix && (is.logical(exp_val) && !is.na(exp_val))) 0 else exp_val
+}
+
+
+
 expand_matrices <- function(matrix_list, matrix_info, expand)
 {
   need_expand <- matrix_info$need_expand
@@ -198,10 +228,24 @@ expand_matrices <- function(matrix_list, matrix_info, expand)
   rnms <- matrix_info$row_names
   cnms <- matrix_info$col_names
   for (l in 1:nmatrix) {
+    NR <- nrow(matrix_list[[l]])
+    NC <- ncol(matrix_list[[l]])
     if (!is.null(matrix_list[[l]])) {
-      expand_list[[l]] <- matrix(expand[[l]], nrow = nr, ncol = nc)
+      is_Matrix <- is(matrix_list[[l]], "Matrix")
+      expand_value <- set_expand_value(is_Matrix, if (is.logical(expand)) expand else expand[[l]])
+      expand_list[[l]] <- MATRIX(expand_value, nrow = nr, ncol = nc, is_Matrix)
+      # expand_list[[l]] <- MATRIX(expand[[l]], nrow = nr, ncol = nc, is_Matrix)
       rownames(expand_list[[l]]) <- rnms
       colnames(expand_list[[l]]) <- cnms
+      if (is_Matrix) {
+        # expand_list[[l]][] <- expand[[l]]
+        expand_list[[l]][] <- expand_value
+        expand_list[[l]] <- methods::as(expand_list[[l]], class(matrix_list[[l]]))
+        if ((NR < nr || NC < nc) &&
+            ((is.integer(expand_value) && expand_value == 0L) ||
+             (is.numeric(expand_value) && abs(expand_value) < .Machine$double.eps^.5)))
+          expand_list[[l]] <- methods::as(expand_list[[l]], "sparseMatrix")
+      }
       old_rnms <- rownames(matrix_list[[l]])
       old_cnms <- colnames(matrix_list[[l]])
       ridx <- rnms %in% old_rnms
@@ -312,9 +356,13 @@ set_meta <- function(side, meta, info, key, tag, adjust)
 #' An interesting side-effect is that one can use this option to match the
 #' dimnames and provide a common row/column order among the matrices.
 #'
-#' The padding special value is, by default (`expand = TRUE`), `NA`. It can be
-#' changed by providing any value (e.g, `-1`) to `expand`, in which case the
-#' same padding value is used for all matrices.
+#' For base matrices, the padding special value is, by default
+#' (`expand = TRUE`), `NA`. For the special matrices (Matrix package), the
+#' default value is `0`. For these special matrices, padding with 0 forces
+#' conversion to sparse matrix.
+#'
+#' The default value can be changed by providing any value (e.g, `-1`) to
+#' `expand`, in which case the same padding value is used for all matrices.
 #'
 #' If different padding values are needed for each matrices, a list can be
 #' provided to `expand`. If the list is unnamed, it must match the number of
@@ -333,7 +381,8 @@ set_meta <- function(side, meta, info, key, tag, adjust)
 #'                    Setting this parameter to `TRUE` will enable the expansion
 #'                    feature. See the section \sQuote{Matrix Expansion} for more
 #'                    details of what it is, as well as other possible options
-#'                    for `expand`.
+#'                    for `expand`. The section will also detail how the default
+#'                    expansion value is dependent on the matrix types.
 #' @param row_info    a data frame, used to annotate matrix rows. The link
 #'                    between the matrix row names and the data frame is given
 #'                    in column "rowname". A different column can be used if one
@@ -565,7 +614,15 @@ as_matrixset.default <- function(x, expand = NULL, row_info = NULL,
                                  column_info = NULL, row_key = "rowname",
                                  column_key = "colname", row_tag = ".rowname",
                                  column_tag = ".colname")
-  stop(paste("objects of class", class(x), "are not supported"))
+{
+  if (methods::is(x, "Matrix")) {
+
+    matrixset("..1" = x, row_info = row_info, column_info = column_info,
+              row_key = row_key, column_key = column_key, row_tag = row_tag,
+              column_tag = column_tag)
+
+  } else stop(paste("objects of class", class(x), "are not supported"))
+}
 
 
 #' @export

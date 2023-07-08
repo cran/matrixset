@@ -130,17 +130,25 @@ dimnames.matrixset <- function(x) list(attr(x, "row_names"), attr(x, "col_names"
   if (!is.list(value) || length(value) != 2L)
     stop("invalid 'dimnames' given for data frame")
 
+  orig_val <- dimnames(x)
+
+  lov1 <- length(orig_val[[1L]])
+  lov2 <- length(orig_val[[2L]])
+
   value[[1L]] <- as.character(value[[1L]])
   value[[2L]] <- as.character(value[[2L]])
 
-  if (d[[1L]] != length(value[[1L]]))
+  lv1 <- length(value[[1L]])
+  lv2 <- length(value[[2L]])
+
+  if (lov1 && d[[1L]] != lv1)
     stop("incompatible row names length.")
 
-  if (d[[2L]] != length(value[[2L]]))
+  if (lov2 && d[[2L]] != lv2)
     stop("incompatible column names length.")
 
-  .row_names_ms(x) <- value[[1L]]
-  .col_names_ms(x) <- value[[2L]]
+  if (lv1) .row_names_ms(x) <- value[[1L]]
+  if (lv2) .col_names_ms(x) <- value[[2L]]
   x
 }
 
@@ -175,7 +183,17 @@ dimnames.matrixset <- function(x) list(attr(x, "row_names"), attr(x, "col_names"
   })
 
   x$matrix_set <- x_matrix_set
-  x$row_info[[.rowtag(x)]] <- value
+
+  rt <- .rowtag(x)
+  if (nrow(x$row_info)) {
+    x$row_info[[rt]] <- value
+  } else {
+    ri <- tibble::tibble(foo = value)
+    ri[[rt]]<- ri$foo
+    ri$foo <- NULL
+    x$row_info <- ri
+  }
+
   attr(x, "row_names") <- value
 
   x
@@ -203,7 +221,17 @@ dimnames.matrixset <- function(x) list(attr(x, "row_names"), attr(x, "col_names"
   })
 
   x$matrix_set <- x_matrix_set
-  x$column_info[[.coltag(x)]] <- value
+
+  ct <- .coltag(x)
+  if (nrow(x$column_info)) {
+    x$column_info[[ct]] <- value
+  } else {
+    ci <- tibble::tibble(foo = value)
+    ci[[ct]]<- ci$foo
+    ci$foo <- NULL
+    x$column_info <- ci
+  }
+
   attr(x, "col_names") <- value
 
   x
@@ -679,14 +707,25 @@ coll <- function(s)
 }
 
 
-print_matrix <- function(m) UseMethod("print_matrix")
 
-print_matrix.NULL <- function(m) print(NULL)
 
-print_matrix.matrix <- function(m)
+
+print_matrix <- function(m, nrow_print = NULL, ncol_print = NULL,
+                         class_print = NULL)
+  UseMethod("print_matrix")
+
+print_matrix.NULL <- function(m, nrow_print = NULL, ncol_print = NULL,
+                              class_print = NULL)
+  print(NULL)
+
+
+print_matrix.matrix <- function(m, nrow_print = NULL, ncol_print = NULL,
+                                class_print = NULL)
 {
   nr <- nrow(m)
   nc <- ncol(m)
+  if (is.null(nrow_print)) nrow_print <- nr
+  if (is.null(ncol_print)) ncol_print <- nc
   row_shrinked <- FALSE
   col_shrinked <- FALSE
 
@@ -711,12 +750,12 @@ print_matrix.matrix <- function(m)
     }
 
     if (nc > 4) {
-      ic <- c(1:3, nr)
+      ic <- c(1:3, nc)
       col_shrinked <- TRUE
     }
   }
 
-  mout <- format(round2(mout))
+  mout <- format(round2(mout), trim = TRUE)
 
   if (row_shrinked) {
     if (col_shrinked) {
@@ -745,8 +784,9 @@ print_matrix.matrix <- function(m)
 
   lout <- vector('list', NR+1)
   lout[[1]] <- paste(purrr::map2_chr(len,
-                                     c("", cn),
-                                     ~ stringr::str_pad(style_dim(.y, col_dimmed), .x)),
+                                     c(style_dim("", row_dimmed),
+                                       style_dim(cn, col_dimmed)),
+                                     ~ stringr::str_pad(.y, .x)),
                      collapse = " ")
 
   for (i in 2:(NR+1))
@@ -757,12 +797,35 @@ print_matrix.matrix <- function(m)
   }
 
 
-  header <- paste("A", nr, times, nc, enclose(vctrs::vec_ptype_abbr(m[[1]])),
+  if (is.null(class_print)) class_print <- vctrs::vec_ptype_abbr(m[[1]])
+  header <- paste("A", nrow_print, times, ncol_print, enclose(class_print),
                   "matrix")
 
   writeLines(pillar::style_subtle(header))
   cli::cat_line(lout)
 
+}
+
+
+
+
+
+
+print_matrix.Matrix <- function(m, nrow_print = NULL, ncol_print = NULL,
+                                class_print = NULL)
+{
+  M <- m
+
+  nc <- ncol(m)
+  nr <- nrow(m)
+
+  if (is.null(rownames(M))) rownames(M) <- paste0("..", seq(nr))
+  if (is.null(colnames(M))) colnames(M) <- paste0("..", seq(nc))
+
+  if (nc > 4) M <- M[, c(1:4, nc)]
+  if (nr > 3) M <- M[c(1:3, nr), ]
+  M <- as.matrix(M)
+  print_matrix(M, nr, nc, class(m))
 }
 
 
