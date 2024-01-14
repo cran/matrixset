@@ -344,25 +344,26 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h2>Annotate at object creation</h2>
 <p>We will use the same example as in the <a href="introduction.html">introduction vignette</a>, the
 <code>Animals</code> object.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>animals <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(MASS<span class="sc">::</span>Animals)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>log_animals <span class="ot">&lt;-</span> <span class="fu">log</span>(animals)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>animal_info <span class="ot">&lt;-</span> MASS<span class="sc">::</span>Animals <span class="sc">%&gt;%</span> </span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="st">&quot;Animal&quot;</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">is_extinct =</span> <span class="fu">case_when</span>(Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Dipliodocus&quot;</span>, <span class="st">&quot;Triceratops&quot;</span>, <span class="st">&quot;Brachiosaurus&quot;</span>) <span class="sc">~</span> <span class="cn">TRUE</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                                <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">FALSE</span>),</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">class =</span> <span class="fu">case_when</span>(Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Mountain beaver&quot;</span>, <span class="st">&quot;Guinea pig&quot;</span>, <span class="st">&quot;Golden hamster&quot;</span>, <span class="st">&quot;Mouse&quot;</span>, <span class="st">&quot;Rabbit&quot;</span>, <span class="st">&quot;Rat&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Rodent&quot;</span>,</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Potar monkey&quot;</span>, <span class="st">&quot;Gorilla&quot;</span>, <span class="st">&quot;Human&quot;</span>, <span class="st">&quot;Rhesus monkey&quot;</span>, <span class="st">&quot;Chimpanzee&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Primate&quot;</span>,</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Cow&quot;</span>, <span class="st">&quot;Goat&quot;</span>, <span class="st">&quot;Giraffe&quot;</span>, <span class="st">&quot;Sheep&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Ruminant&quot;</span>,</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Asian elephant&quot;</span>, <span class="st">&quot;African elephant&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Elephantidae&quot;</span>,</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Grey wolf&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Canine&quot;</span>,</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Cat&quot;</span>, <span class="st">&quot;Jaguar&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Feline&quot;</span>,</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Donkey&quot;</span>, <span class="st">&quot;Horse&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Equidae&quot;</span>,</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                           Animal <span class="sc">==</span> <span class="st">&quot;Pig&quot;</span> <span class="sc">~</span> <span class="st">&quot;Sus&quot;</span>,</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                           Animal <span class="sc">==</span> <span class="st">&quot;Mole&quot;</span> <span class="sc">~</span> <span class="st">&quot;Talpidae&quot;</span>,</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                           Animal <span class="sc">==</span> <span class="st">&quot;Kangaroo&quot;</span> <span class="sc">~</span> <span class="st">&quot;Macropodidae&quot;</span>,</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                           <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;Dinosaurs&quot;</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>body, <span class="sc">-</span>brain)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt; Warning: package &#39;ggplot2&#39; was built under R version 4.3.1</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>animals <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(MASS<span class="sc">::</span>Animals)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>log_animals <span class="ot">&lt;-</span> <span class="fu">log</span>(animals)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>animal_info <span class="ot">&lt;-</span> MASS<span class="sc">::</span>Animals <span class="sc">%&gt;%</span> </span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>  <span class="fu">rownames_to_column</span>(<span class="st">&quot;Animal&quot;</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">is_extinct =</span> <span class="fu">case_when</span>(Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Dipliodocus&quot;</span>, <span class="st">&quot;Triceratops&quot;</span>, <span class="st">&quot;Brachiosaurus&quot;</span>) <span class="sc">~</span> <span class="cn">TRUE</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>                                <span class="cn">TRUE</span> <span class="sc">~</span> <span class="cn">FALSE</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>         <span class="at">class =</span> <span class="fu">case_when</span>(Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Mountain beaver&quot;</span>, <span class="st">&quot;Guinea pig&quot;</span>, <span class="st">&quot;Golden hamster&quot;</span>, <span class="st">&quot;Mouse&quot;</span>, <span class="st">&quot;Rabbit&quot;</span>, <span class="st">&quot;Rat&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Rodent&quot;</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Potar monkey&quot;</span>, <span class="st">&quot;Gorilla&quot;</span>, <span class="st">&quot;Human&quot;</span>, <span class="st">&quot;Rhesus monkey&quot;</span>, <span class="st">&quot;Chimpanzee&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Primate&quot;</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Cow&quot;</span>, <span class="st">&quot;Goat&quot;</span>, <span class="st">&quot;Giraffe&quot;</span>, <span class="st">&quot;Sheep&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Ruminant&quot;</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Asian elephant&quot;</span>, <span class="st">&quot;African elephant&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Elephantidae&quot;</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Grey wolf&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Canine&quot;</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Cat&quot;</span>, <span class="st">&quot;Jaguar&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Feline&quot;</span>,</span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a>                           Animal <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;Donkey&quot;</span>, <span class="st">&quot;Horse&quot;</span>) <span class="sc">~</span> <span class="st">&quot;Equidae&quot;</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a>                           Animal <span class="sc">==</span> <span class="st">&quot;Pig&quot;</span> <span class="sc">~</span> <span class="st">&quot;Sus&quot;</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a>                           Animal <span class="sc">==</span> <span class="st">&quot;Mole&quot;</span> <span class="sc">~</span> <span class="st">&quot;Talpidae&quot;</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a>                           Animal <span class="sc">==</span> <span class="st">&quot;Kangaroo&quot;</span> <span class="sc">~</span> <span class="st">&quot;Macropodidae&quot;</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" tabindex="-1"></a>                           <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;Dinosaurs&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-20"><a href="#cb1-20" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>body, <span class="sc">-</span>brain)</span></code></pre></div>
 <p>Annotations are internally stored as [tibble::tibble()] objects and
 can be viewed as simple data bases. As such, a key is needed to uniquely
 identify the rows or the columns. This key is the rownames for row
@@ -378,49 +379,49 @@ be called <code>.rowname</code>/<code>.colname</code> - in a
 <p>Moreover, the key values must correspond to rownames/colnames. Values
 that do not match will simply left out.</p>
 <p>To use the annotation at creation, simply use a command like this</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>ms <span class="ot">&lt;-</span> <span class="fu">matrixset</span>(<span class="at">msr =</span> animals, <span class="at">log_msr =</span> log_animals, <span class="at">row_info =</span> animal_info,</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">row_key =</span> <span class="st">&quot;Animal&quot;</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>ms</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; matrixset of 2 28 × 2 matrices</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; matrix_set: msr </span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A 28 × 2 &lt;dbl&gt; matrix</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                   body  brain</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mountain beaver   1.35   8.10</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             ...    ...    ...</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             Pig 192.00 180.00</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; matrix_set: log_msr </span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; A 28 × 2 &lt;dbl&gt; matrix</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                 body brain</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mountain beaver 0.30  2.09</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             ...  ...   ...</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;             Pig 5.26  5.19</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; row_info:</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 28 × 3</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    .rowname        is_extinct class       </span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;           &lt;lgl&gt;      &lt;chr&gt;       </span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1 Mountain beaver FALSE      Rodent      </span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2 Cow             FALSE      Ruminant    </span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3 Grey wolf       FALSE      Canine      </span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4 Goat            FALSE      Ruminant    </span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5 Guinea pig      FALSE      Rodent      </span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6 Dipliodocus     TRUE       Dinosaurs   </span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7 Asian elephant  FALSE      Elephantidae</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8 Donkey          FALSE      Equidae     </span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 Horse           FALSE      Equidae     </span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 Potar monkey    FALSE      Primate     </span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ 18 more rows</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; column_info:</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 1</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   .colname</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;   </span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 body    </span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 brain</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>ms <span class="ot">&lt;-</span> <span class="fu">matrixset</span>(<span class="at">msr =</span> animals, <span class="at">log_msr =</span> log_animals, <span class="at">row_info =</span> animal_info,</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>                <span class="at">row_key =</span> <span class="st">&quot;Animal&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>ms</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; matrixset of 2 28 × 2 matrices</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; matrix_set: msr </span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; A 28 × 2 &lt;dbl&gt; matrix</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt;                   body  brain</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Mountain beaver   1.35   8.10</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt;             ...    ...    ...</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt;             Pig 192.00 180.00</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt; matrix_set: log_msr </span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt; A 28 × 2 &lt;dbl&gt; matrix</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt;                 body brain</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt; Mountain beaver 0.30  2.09</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt;             ...  ...   ...</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt;             Pig 5.26  5.19</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-21"><a href="#cb2-21" tabindex="-1"></a><span class="co">#&gt; row_info:</span></span>
+<span id="cb2-22"><a href="#cb2-22" tabindex="-1"></a><span class="co">#&gt; # A tibble: 28 × 3</span></span>
+<span id="cb2-23"><a href="#cb2-23" tabindex="-1"></a><span class="co">#&gt;    .rowname        is_extinct class       </span></span>
+<span id="cb2-24"><a href="#cb2-24" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;           &lt;lgl&gt;      &lt;chr&gt;       </span></span>
+<span id="cb2-25"><a href="#cb2-25" tabindex="-1"></a><span class="co">#&gt;  1 Mountain beaver FALSE      Rodent      </span></span>
+<span id="cb2-26"><a href="#cb2-26" tabindex="-1"></a><span class="co">#&gt;  2 Cow             FALSE      Ruminant    </span></span>
+<span id="cb2-27"><a href="#cb2-27" tabindex="-1"></a><span class="co">#&gt;  3 Grey wolf       FALSE      Canine      </span></span>
+<span id="cb2-28"><a href="#cb2-28" tabindex="-1"></a><span class="co">#&gt;  4 Goat            FALSE      Ruminant    </span></span>
+<span id="cb2-29"><a href="#cb2-29" tabindex="-1"></a><span class="co">#&gt;  5 Guinea pig      FALSE      Rodent      </span></span>
+<span id="cb2-30"><a href="#cb2-30" tabindex="-1"></a><span class="co">#&gt;  6 Dipliodocus     TRUE       Dinosaurs   </span></span>
+<span id="cb2-31"><a href="#cb2-31" tabindex="-1"></a><span class="co">#&gt;  7 Asian elephant  FALSE      Elephantidae</span></span>
+<span id="cb2-32"><a href="#cb2-32" tabindex="-1"></a><span class="co">#&gt;  8 Donkey          FALSE      Equidae     </span></span>
+<span id="cb2-33"><a href="#cb2-33" tabindex="-1"></a><span class="co">#&gt;  9 Horse           FALSE      Equidae     </span></span>
+<span id="cb2-34"><a href="#cb2-34" tabindex="-1"></a><span class="co">#&gt; 10 Potar monkey    FALSE      Primate     </span></span>
+<span id="cb2-35"><a href="#cb2-35" tabindex="-1"></a><span class="co">#&gt; # ℹ 18 more rows</span></span>
+<span id="cb2-36"><a href="#cb2-36" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-37"><a href="#cb2-37" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb2-38"><a href="#cb2-38" tabindex="-1"></a><span class="co">#&gt; column_info:</span></span>
+<span id="cb2-39"><a href="#cb2-39" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 1</span></span>
+<span id="cb2-40"><a href="#cb2-40" tabindex="-1"></a><span class="co">#&gt;   .colname</span></span>
+<span id="cb2-41"><a href="#cb2-41" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;   </span></span>
+<span id="cb2-42"><a href="#cb2-42" tabindex="-1"></a><span class="co">#&gt; 1 body    </span></span>
+<span id="cb2-43"><a href="#cb2-43" tabindex="-1"></a><span class="co">#&gt; 2 brain</span></span></code></pre></div>
 <p>Notice how we used the <code>row_key</code> argument to specify how
 to link the two objects together.</p>
 </div>
@@ -430,7 +431,7 @@ to link the two objects together.</p>
 could be an interesting possibility to add annotations to an existing
 <code>matrixset</code> object where none were registered.</p>
 <p>To do so, you can simply do</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">row_info</span>(ms) <span class="ot">&lt;-</span> animal_info <span class="sc">%&gt;%</span> <span class="fu">rename</span>(<span class="at">.rowname =</span> Animal)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">row_info</span>(ms) <span class="ot">&lt;-</span> animal_info <span class="sc">%&gt;%</span> <span class="fu">rename</span>(<span class="at">.rowname =</span> Animal)</span></code></pre></div>
 <p>For the operation to work, a column called <code>.rowname</code> (or
 more generally, what is returned by <code>row_tag()</code>) must be part
 of the data frame.</p>
@@ -463,8 +464,8 @@ row from <code>.ms</code> matches more than one row in <code>.y</code>,
 no row duplication will be performed. Instead, a condition error will be
 issued. This is to preserve the <code>matrixset</code> property that all
 row names (and column names) must be unique.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">matrixset</span>(<span class="at">msr =</span> animals, <span class="at">log_msr =</span> log_animals) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">join_row_info</span>(animal_info, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;.rowname&quot;</span> <span class="ot">=</span> <span class="st">&quot;Animal&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">matrixset</span>(<span class="at">msr =</span> animals, <span class="at">log_msr =</span> log_animals) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>    <span class="fu">join_row_info</span>(animal_info, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;.rowname&quot;</span> <span class="ot">=</span> <span class="st">&quot;Animal&quot;</span>))</span></code></pre></div>
 <div id="the-data-frame-can-be-taken-from-a-second-matrixset-object" class="section level3">
 <h3>The data frame can be taken from a second matrixset object</h3>
 <p>Indeed! In using
@@ -480,27 +481,27 @@ argument. In that case the row/column tag of each object is used.</p>
 <p>If you are familiar with <code>dplyr::mutate()</code>, then you know
 almost everything you need to know about using
 <code>annotate_row()</code> and <code>annotate_column()</code>.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>ms <span class="ot">&lt;-</span> <span class="fu">matrixset</span>(<span class="at">msr =</span> animals, <span class="at">log_msr =</span> log_animals) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">join_row_info</span>(animal_info, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;.rowname&quot;</span> <span class="ot">=</span> <span class="st">&quot;Animal&quot;</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate_column</span>(<span class="at">unit =</span> <span class="fu">case_when</span>(.colname <span class="sc">==</span> <span class="st">&quot;body&quot;</span> <span class="sc">~</span> <span class="st">&quot;kg&quot;</span>,</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                                     <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;g&quot;</span>)) <span class="sc">%&gt;%</span> </span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate_column</span>(<span class="at">us_unit =</span> <span class="fu">case_when</span>(unit <span class="sc">==</span> <span class="st">&quot;kg&quot;</span> <span class="sc">~</span> <span class="st">&quot;lb&quot;</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                                        <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;oz&quot;</span>))</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">column_info</span>(ms)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   .colname unit  us_unit</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;  </span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 body     kg    lb     </span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 brain    g     oz</span></span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>ms <span class="ot">&lt;-</span> <span class="fu">matrixset</span>(<span class="at">msr =</span> animals, <span class="at">log_msr =</span> log_animals) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>    <span class="fu">join_row_info</span>(animal_info, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">&quot;.rowname&quot;</span> <span class="ot">=</span> <span class="st">&quot;Animal&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>    <span class="fu">annotate_column</span>(<span class="at">unit =</span> <span class="fu">case_when</span>(.colname <span class="sc">==</span> <span class="st">&quot;body&quot;</span> <span class="sc">~</span> <span class="st">&quot;kg&quot;</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>                                     <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;g&quot;</span>)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="fu">annotate_column</span>(<span class="at">us_unit =</span> <span class="fu">case_when</span>(unit <span class="sc">==</span> <span class="st">&quot;kg&quot;</span> <span class="sc">~</span> <span class="st">&quot;lb&quot;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>                                        <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;oz&quot;</span>))</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="fu">column_info</span>(ms)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;   .colname unit  us_unit</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;  </span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; 1 body     kg    lb     </span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; 2 brain    g     oz</span></span></code></pre></div>
 <p>You can decide that you don’t need two unit systems and keep only
 one</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ms <span class="ot">&lt;-</span> ms <span class="sc">%&gt;%</span> <span class="fu">annotate_column</span>(<span class="at">us_unit =</span> <span class="cn">NULL</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">column_info</span>(ms)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   .colname unit </span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 body     kg   </span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 brain    g</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>ms <span class="ot">&lt;-</span> ms <span class="sc">%&gt;%</span> <span class="fu">annotate_column</span>(<span class="at">us_unit =</span> <span class="cn">NULL</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="fu">column_info</span>(ms)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt;   .colname unit </span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; 1 body     kg   </span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; 2 brain    g</span></span></code></pre></div>
 </div>
 <div id="creating-new-annotations-from-applying-functions-to-an-objects-matrix" class="section level2">
 <h2>Creating new annotations from applying function(s) to an object’s
@@ -510,36 +511,36 @@ in the <a href="apply.html">Applying Functions</a> vignette.</p>
 <p>The idea here is the same, but with the added benefit that the
 function result is stored directly as annotation for the
 <code>matrixset</code> object.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ms <span class="sc">%&gt;%</span> </span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate_row_from_apply</span>(msr, <span class="at">ratio_brain_body =</span> <span class="sc">~</span> .i[<span class="dv">2</span>]<span class="sc">/</span>(<span class="dv">10</span><span class="sc">*</span>.i[<span class="dv">1</span>])) <span class="sc">%&gt;%</span> </span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">row_info</span>()</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 28 × 4</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    .rowname        is_extinct class        ratio_brain_body</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;           &lt;lgl&gt;      &lt;chr&gt;                   &lt;dbl&gt;</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  1 Mountain beaver FALSE      Rodent               0.6     </span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  2 Cow             FALSE      Ruminant             0.0910  </span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  3 Grey wolf       FALSE      Canine               0.329   </span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  4 Goat            FALSE      Ruminant             0.416   </span></span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  5 Guinea pig      FALSE      Rodent               0.529   </span></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  6 Dipliodocus     TRUE       Dinosaurs            0.000427</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  7 Asian elephant  FALSE      Elephantidae         0.181   </span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  8 Donkey          FALSE      Equidae              0.224   </span></span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;  9 Horse           FALSE      Equidae              0.126   </span></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 10 Potar monkey    FALSE      Primate              1.15    </span></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ 18 more rows</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>ms <span class="sc">%&gt;%</span> </span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>    <span class="fu">annotate_row_from_apply</span>(msr, <span class="at">ratio_brain_body =</span> <span class="sc">~</span> .i[<span class="dv">2</span>]<span class="sc">/</span>(<span class="dv">10</span><span class="sc">*</span>.i[<span class="dv">1</span>])) <span class="sc">%&gt;%</span> </span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>    <span class="fu">row_info</span>()</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; # A tibble: 28 × 4</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt;    .rowname        is_extinct class        ratio_brain_body</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt;    &lt;chr&gt;           &lt;lgl&gt;      &lt;chr&gt;                   &lt;dbl&gt;</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt;  1 Mountain beaver FALSE      Rodent               0.6     </span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt;  2 Cow             FALSE      Ruminant             0.0910  </span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt;  3 Grey wolf       FALSE      Canine               0.329   </span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt;  4 Goat            FALSE      Ruminant             0.416   </span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt;  5 Guinea pig      FALSE      Rodent               0.529   </span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt;  6 Dipliodocus     TRUE       Dinosaurs            0.000427</span></span>
+<span id="cb7-13"><a href="#cb7-13" tabindex="-1"></a><span class="co">#&gt;  7 Asian elephant  FALSE      Elephantidae         0.181   </span></span>
+<span id="cb7-14"><a href="#cb7-14" tabindex="-1"></a><span class="co">#&gt;  8 Donkey          FALSE      Equidae              0.224   </span></span>
+<span id="cb7-15"><a href="#cb7-15" tabindex="-1"></a><span class="co">#&gt;  9 Horse           FALSE      Equidae              0.126   </span></span>
+<span id="cb7-16"><a href="#cb7-16" tabindex="-1"></a><span class="co">#&gt; 10 Potar monkey    FALSE      Primate              1.15    </span></span>
+<span id="cb7-17"><a href="#cb7-17" tabindex="-1"></a><span class="co">#&gt; # ℹ 18 more rows</span></span></code></pre></div>
 <p>When groups are registered, results are spread using
 <code>tidyr::pivot_wider()</code>.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>ms <span class="sc">%&gt;%</span> </span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">row_group_by</span>(class) <span class="sc">%&gt;%</span> </span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate_column_from_apply</span>(msr, mean) <span class="sc">%&gt;%</span> </span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">column_info</span>()</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 13</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   .colname unit  Canine Dinosaurs Elephantidae Equidae Feline Macropodidae</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;  &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;        &lt;dbl&gt;</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1 body     kg      36.3   36033.         4600.    354.   51.6           35</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 2 brain    g      120.       91.5        5158.    537    91.3           56</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; # ℹ 5 more variables: Primate &lt;dbl&gt;, Rodent &lt;dbl&gt;, Ruminant &lt;dbl&gt;, Sus &lt;dbl&gt;,</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; #   Talpidae &lt;dbl&gt;</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>ms <span class="sc">%&gt;%</span> </span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>    <span class="fu">row_group_by</span>(class) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>    <span class="fu">annotate_column_from_apply</span>(msr, mean) <span class="sc">%&gt;%</span> </span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>    <span class="fu">column_info</span>()</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 13</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt;   .colname unit  Canine Dinosaurs Elephantidae Equidae Feline Macropodidae</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;  &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;        &lt;dbl&gt;</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="co">#&gt; 1 body     kg      36.3   36033.         4600.    354.   51.6           35</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a><span class="co">#&gt; 2 brain    g      120.       91.5        5158.    537    91.3           56</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a><span class="co">#&gt; # ℹ 5 more variables: Primate &lt;dbl&gt;, Rodent &lt;dbl&gt;, Ruminant &lt;dbl&gt;, Sus &lt;dbl&gt;,</span></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a><span class="co">#&gt; #   Talpidae &lt;dbl&gt;</span></span></code></pre></div>
 </div>
 
 

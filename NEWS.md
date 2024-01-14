@@ -1,3 +1,42 @@
+# matrixset 0.3.0
+
+## Improved performance
+
+A complete rewrite of the `apply_` functions have been performed. The initial
+goal was to have clearer codes to maintain, but from a user perspective, an 
+improvement on speed should be observed as well.
+
+On another positive note, the opportunity of the rewrite was taken to correct
+some bugs (see below).
+
+## Improved functionality
+
+* The `mutate_matrix()` function now has access to context functions. This
+  implements [#09](https://github.com/pascalcroteau/matrixset/issues/9).
+* The `apply_` function family gained a new `.force_name` argument, available
+  for the `dfl/dfw` versions. This allows better control in getting meaningful
+  IDs to the outcomes.
+  
+  For instance, using `.force_name` solves the issue
+  [#12](https://github.com/pascalcroteau/matrixset/issues/12)
+* Functions `join_row_info()` and `join_column_info()` now have more `adjust`
+  possibilities to expand matrix sizes when the join operation results in matrix
+  expansion. This implements 
+  [#10](https://github.com/pascalcroteau/matrixset/issues/10).
+
+## Bug correction
+
+* The function `mutate_matrix()` can now accept statements such as 
+  `mutate_matrix(ms, foo=bar)`, which was impossible before.
+* `apply_matrix_df*` now works when subgroup yields 1 x m or n x 1 matrices.
+  This solves [#13](https://github.com/pascalcroteau/matrixset/issues/13)
+* [#12](https://github.com/pascalcroteau/matrixset/issues/12) has been resolved
+  by the addition of the `.force_name` argument.
+* A miss-parametrization of function `join_column_info()` made it impossible to
+  be executed. This has now been fixed.
+* `matrixset` objects with 0 rows can now be printed.
+* sub-setting `matrixset`s that yields 0-row objects is now possible.
+
 # matrixset 0.2.0
 
 ## Main new Feature

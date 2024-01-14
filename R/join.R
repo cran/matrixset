@@ -120,6 +120,35 @@ margin_names <- function(obj, mrg)
 
 
 
+set_adjust <- function(adj, y_ms)
+{
+  adj_type <- typeof(adj)
+  adjust <- switch (adj_type,
+                    "logical" = adj,
+                    "character" = TRUE,
+                    stop("adjust parameter must be a logical or a character vector of length 1.")
+                    )
+
+  if (length(adj) > 1) {
+    warning("'adjust' is of length > 1. Keeping the first element only.")
+    adjust <- adjust[1]
+  }
+
+  adjust_how <- if (is.character(adj)) {
+    match_option(adj, adjust_opts)
+  } else adjust_opts["x_only"]
+
+  if (adjust && adjust_how != adjust_opts["x_only"] && !y_ms) {
+    adjust_how <- adjust_opts["x_only"]
+    warning(stringr::str_glue("'adjust' has been forced to '{ADJ}' because 'y' is a data.frame",
+                              ADJ = adjust_opts["x_only"]))
+  }
+
+  list(adjust = adjust, adjust_how = adjust_how)
+}
+
+
+
 fill_matrix <- function(m, margin, nr, nc, old_names, all_names, compl_names)
 {
   if (is.null(m)) return(NULL)
@@ -170,6 +199,41 @@ fill_matrix <- function(m, margin, nr, nc, old_names, all_names, compl_names)
 
 
 
+fill_from_y <- function(m, Y, margin, new_names, compl_names, all_names)
+{
+  if (is.null(m)) return(NULL)
+  if (is.null(Y)) return(m)
+
+  pos <- match(new_names, all_names)
+
+  if (margin == "row") {
+
+    x_col <- match(colnames(Y), compl_names, 0)
+    y_col <- match(compl_names, colnames(Y), 0)
+    if (any(x_col > 0) && any(y_col > 0)) {
+      y <- Y[new_names, y_col, drop = FALSE]
+      m[pos, x_col] <- y
+    }
+
+
+  } else {
+
+    x_row <- match(rownames(Y), compl_names, 0)
+    y_row <- match(compl_names, rownames(Y), 0)
+    if (any(x_row > 0) && any(y_row > 0)) {
+      y <- Y[y_row, new_names, drop = FALSE]
+      m[x_row, pos] <- y
+    }
+
+  }
+
+  m
+
+}
+
+
+
+
 sub_matrix <- function(m, margin, old_names, all_names, compl_names)
 {
   if (is.null(m)) return(NULL)
@@ -194,6 +258,11 @@ sub_matrix <- function(m, margin, old_names, all_names, compl_names)
   cash_status$set(cl)
   on.exit(cash_status$clear(cl))
 
+  adjust_meta <- set_adjust(adjust, is_matrixset(.ms_y))
+  adjust <- adjust_meta$adjust
+  adjust_how <- adjust_meta$adjust_how
+  adjust_from_y <- adjust_how != adjust_opts["x_only"]
+
   x_nms <- join_names(.ms_x, margin)
   y_nms <- join_names(.ms_y, margin)
   x_tag <- join_tag(.ms_x, margin)
@@ -206,23 +275,30 @@ sub_matrix <- function(m, margin, old_names, all_names, compl_names)
   info_y <- join_info(.ms_y, margin)
 
 
+  # args <- list("info_x", "info_y", by = as.name("by"),
+  #              suffix = as.name("suffix"), na_matches = as.name('na_matches'))
   args <- list("info_x", "info_y", by = as.name("by"),
-               suffix = as.name("suffix"), na_matches = as.name('na_matches'))
+               na_matches = as.name('na_matches'))
+  if (!(type %in% filt_join_opts)) args <- c(args, suffix = as.name("suffix"))
   join_call <- rlang::call2(paste0(type, "_join"), !!!rlang::syms(args),
                             .ns = "dplyr")
   info <- rlang::eval_tidy(join_call)
 
-  # make sure the new key (row/col name has no duplicates)
-  ntag <- dplyr::count(info, !!as.name(x_tag))
-  ntag <- if(x_tag == "n") {
-    ntag[["nn"]]
-  } else {
-    ntag[["n"]]
-  }
-  ntag <- unique(ntag)
+  ni <- nrow(info)
 
-  if (length(ntag) > 1 || ntag > 1)
-    stop(paste("'by' does not result in unique", margin, "names"))
+  if (ni > 0) {
+    # make sure the new key (row/col name has no duplicates)
+    ntag <- dplyr::count(info, !!as.name(x_tag))
+    ntag <- if(x_tag == "n") {
+      ntag[["nn"]]
+    } else {
+      ntag[["n"]]
+    }
+    ntag <- unique(ntag)
+
+    if (length(ntag) > 1 || ntag > 1)
+      stop(paste("'by' does not result in unique", margin, "names"))
+  }
 
   tr <- colnames(info)
 
@@ -234,15 +310,33 @@ sub_matrix <- function(m, margin, old_names, all_names, compl_names)
       old_names <- nms$nms
       compl_names <- nms$compl
       all_names <- info[[x_tag]]
+      if (adjust_from_y) new_names <- setdiff(all_names, old_names)
 
       nr <- if (margin == "row") ni else nrow(.ms_x)
       nc <- if (margin == "row") ncol(.ms_x) else ni
       mats <- .ms_x$matrix_set
 
       if (ni > n) {
-        mats <- lapply(mats,
-                       function(m) fill_matrix(m, margin, nr, nc, old_names,
-                                               all_names, compl_names))
+        # mats <- lapply(mats,
+        #                function(m) fill_matrix(m, margin, nr, nc, old_names,
+        #                                        all_names, compl_names))
+        if (adjust_from_y) Y <- .ms_y$matrix_set
+        mats_nms <- names(mats)
+        mats <- lapply(mats_nms,
+                       function(m_nm) {
+                         m <- mats[[m_nm]]
+                         newm <- fill_matrix(m, margin, nr, nc, old_names,
+                                             all_names, compl_names)
+                         if (adjust_from_y) {
+                           if (m_nm %in% names(Y)) {
+                             y <- Y[[m_nm]]
+                             newm <- fill_from_y(newm, y, margin, new_names,
+                                                 compl_names, all_names)
+                           }
+                         }
+                         newm
+                       })
+        names(mats) <- mats_nms
       } else {
         mats <- lapply(mats,
                        function(m) sub_matrix(m, margin, old_names, all_names,
@@ -298,8 +392,9 @@ sub_matrix <- function(m, margin, old_names, all_names, compl_names)
 #' data.frame if it is a `matrixset` object). The function [join_column_info()]
 #' does the equivalent operation for column meta info.
 #'
-#' The default join operation is a left join (type == `"left"`), but all dplyr's
-#' mutating joins are available (`"left"`, `"inner"`, `"right"` and `"full"`).
+#' The default join operation is a `r join_opts["default"]` join
+#' (type == `r sQuote(join_opts["default"])`), but most of dplyr's
+#' joins are available (`r flatten_or(join_opts)`).
 #'
 #' The `matrixset` paradigm of unique row/column names is enforced so if a
 #' `.ms` data.frame row matches multiple ones in `y`, this results in an
@@ -307,8 +402,8 @@ sub_matrix <- function(m, margin, old_names, all_names, compl_names)
 #'
 #' @param .ms           A `matrixset` object
 #' @param y             A `matrixset` object or a `data.frame`.
-#' @param type          Joining type, one of `"left"` (default), `"inner"`,
-#'                      `"right"` or `"full"`
+#' @param type          Joining type, one of `r sQuote(join_opts["default"])`,
+#'                      `r flatten_or(join_opts[join_opts != join_opts["default"]])`.
 #' @param by            The names of the variable to join by.
 #'                      The default, `NULL`, results in slightly different
 #'                      behavior depending if `y` is a `matrixset` or a
@@ -327,7 +422,19 @@ sub_matrix <- function(m, margin, old_names, all_names, compl_names)
 #'                      If `TRUE`, this will be allowed. In the case where the
 #'                      data frame is augmented, the matrices of `.ms`
 #'                      will be augmented accordingly by padding with `NA`s (
-#'                      except for the `NULL`matrices).
+#'                      except for the `NULL` matrices).
+#'
+#'    Alternatively, `adjust` can be a single string, one of
+#'    `r flatten_or(adjust_opts)`. Choosing "`r adjust_opts["x_only"]`"
+#'    is equivalent to `TRUE`. When choosing "`r adjust_opts["from_y"]`",
+#'    padding is done using values from `y`, but only
+#'
+#'    1. if `y` is a `matrixset`
+#'    2. for `y` matrices that are named the same in `x`
+#'    3. If padding rows, only columns common between `x` and `y` will use `y`
+#'      values. The same logic is applied when padding columns.
+#'
+#'    Other values are padded with `NA`.
 #' @param suffix        Suffixes added to disambiguate trait variables. See
 #'                      `dplyr`'s [dplyr::join()].
 #' @param na_matches    How to handle missing values when matching. See
@@ -399,7 +506,7 @@ join_column_info.matrixset <- function(.ms, y, type = "left", by = NULL,
                                        na_matches = c("na", "never"))
 {
   na_matches <- match.arg(na_matches)
-  .join_info(type, "column", .ms, y, by = by, suffix = suffix,
+  .join_info(type, "col", .ms, y, by = by, suffix = suffix,
              na_matches = na_matches, adjust = adjust)
 }
 
