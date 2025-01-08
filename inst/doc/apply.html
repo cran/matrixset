@@ -49,7 +49,7 @@ overflow: visible;
 </style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span { line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +60,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -432,61 +432,65 @@ purposes.</p>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">library</span>(purrr)</span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>out <span class="ot">&lt;-</span> animals_ms <span class="sc">%&gt;%</span> </span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>   <span class="fu">apply_matrix</span>(exp,</span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>                <span class="fu">mean</span>(.m, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>                <span class="sc">~</span> <span class="fu">mean</span>(.m, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
 <span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>                <span class="at">foo=</span>asinh,</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>                <span class="at">pow =</span> <span class="dv">2</span><span class="sc">^</span>.m,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>                <span class="at">pow =</span> <span class="sc">~</span> <span class="dv">2</span><span class="sc">^</span>.m,</span>
 <span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>                <span class="at">reg =</span> <span class="sc">~</span> {</span>
 <span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>                  is_alive <span class="ot">&lt;-</span> <span class="sc">!</span>is_extinct</span>
 <span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>                  <span class="fu">lm</span>(.m <span class="sc">~</span> is_alive <span class="sc">+</span> class)</span>
 <span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>                  })</span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co"># out[[1]] %&gt;% map(~ if (is.matrix(.x)) {head(.x, 5)} else .x)</span></span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="fu">show_lst</span>(out[[<span class="dv">1</span>]])</span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; $exp</span></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;                 body                    brain                  </span></span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; Mountain beaver &quot;3.85742553069697&quot;      &quot;3294.46807528384&quot;     </span></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; Cow             &quot;8.84981281719581e+201&quot; &quot;5.08821958272978e+183&quot;</span></span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; Grey wolf       &quot;5996785676464821&quot;      &quot;7.91025688556692e+51&quot; </span></span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; Goat            &quot;1029402857448.45&quot;      &quot;8.78750163583702e+49&quot; </span></span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt;                 &quot;...&quot;                   &quot;...&quot;                  </span></span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; $`mean(.m, trim = 0.1)`</span></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; [1] 335.1291</span></span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt; $foo</span></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt;                 body               brain             </span></span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt; Mountain beaver &quot;1.10857244179685&quot; &quot;2.78880004092018&quot;</span></span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt; Cow             &quot;6.83518574234833&quot; &quot;6.74052075680554&quot;</span></span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt; Grey wolf       &quot;4.28598038575143&quot; &quot;5.47648105816811&quot;</span></span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt; Goat            &quot;4.01346111184316&quot; &quot;5.43809821197888&quot;</span></span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt;                 &quot;...&quot;              &quot;...&quot;             </span></span>
-<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; $pow</span></span>
-<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt;                 body                    brain                  </span></span>
-<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt; Mountain beaver &quot;2.54912125463852&quot;      &quot;274.374006409291&quot;     </span></span>
-<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a><span class="co">#&gt; Cow             &quot;9.52682052708738e+139&quot; &quot;2.16614819853189e+127&quot;</span></span>
-<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a><span class="co">#&gt; Grey wolf       &quot;86381301347.2935&quot;      &quot;9.39906129562518e+35&quot; </span></span>
-<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="co">#&gt; Goat            &quot;212075099.808884&quot;      &quot;4.15383748682786e+34&quot; </span></span>
-<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt;                 &quot;...&quot;                   &quot;...&quot;                  </span></span>
-<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#&gt; $reg</span></span>
-<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
-<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a><span class="co">#&gt; lm(formula = .m ~ is_alive + class)</span></span>
-<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a><span class="co">#&gt; Coefficients:</span></span>
-<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a><span class="co">#&gt;                    body       brain    </span></span>
-<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a><span class="co">#&gt; (Intercept)         36033.33      91.50</span></span>
-<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a><span class="co">#&gt; is_aliveTRUE       -35997.00      28.00</span></span>
-<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a><span class="co">#&gt; classDinosaurs            NA         NA</span></span>
-<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="co">#&gt; classElephantidae    4564.17    5038.00</span></span>
-<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a><span class="co">#&gt; classEquidae          317.72     417.50</span></span>
-<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a><span class="co">#&gt; classFeline            15.32     -28.20</span></span>
-<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a><span class="co">#&gt; classMacropodidae      -1.33     -63.50</span></span>
-<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt; classPrimate           31.26     372.50</span></span>
-<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt; classRodent           -35.44    -114.67</span></span>
-<span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a><span class="co">#&gt; classRuminant         232.96     228.75</span></span>
-<span id="cb3-58"><a href="#cb3-58" tabindex="-1"></a><span class="co">#&gt; classSus              155.67      60.50</span></span>
-<span id="cb3-59"><a href="#cb3-59" tabindex="-1"></a><span class="co">#&gt; classTalpidae         -36.21    -116.50</span></span></code></pre></div>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; Warning: Formatting NULL matrices was deprecated in matrixset 0.4.0.</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; This warning is displayed once every 8 hours.</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; generated.</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co"># out[[1]] %&gt;% map(~ if (is.matrix(.x)) {head(.x, 5)} else .x)</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="fu">show_lst</span>(out[[<span class="dv">1</span>]])</span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; $exp</span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt;                 body                    brain                  </span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; Mountain beaver &quot;3.85742553069697&quot;      &quot;3294.46807528384&quot;     </span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt; Cow             &quot;8.84981281719581e+201&quot; &quot;5.08821958272978e+183&quot;</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; Grey wolf       &quot;5996785676464821&quot;      &quot;7.91025688556692e+51&quot; </span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; Goat            &quot;1029402857448.45&quot;      &quot;8.78750163583702e+49&quot; </span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt;                 &quot;...&quot;                   &quot;...&quot;                  </span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt; $`mean(.m, trim = 0.1)`</span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt; [1] 335.1291</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt; $foo</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt;                 body               brain             </span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; Mountain beaver &quot;1.10857244179685&quot; &quot;2.78880004092018&quot;</span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; Cow             &quot;6.83518574234833&quot; &quot;6.74052075680554&quot;</span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt; Grey wolf       &quot;4.28598038575143&quot; &quot;5.47648105816811&quot;</span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; Goat            &quot;4.01346111184316&quot; &quot;5.43809821197888&quot;</span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt;                 &quot;...&quot;              &quot;...&quot;             </span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a><span class="co">#&gt; $pow</span></span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="co">#&gt;                 body                    brain                  </span></span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt; Mountain beaver &quot;2.54912125463852&quot;      &quot;274.374006409291&quot;     </span></span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt; Cow             &quot;9.52682052708738e+139&quot; &quot;2.16614819853189e+127&quot;</span></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#&gt; Grey wolf       &quot;86381301347.2935&quot;      &quot;9.39906129562518e+35&quot; </span></span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="co">#&gt; Goat            &quot;212075099.808884&quot;      &quot;4.15383748682786e+34&quot; </span></span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="co">#&gt;                 &quot;...&quot;                   &quot;...&quot;                  </span></span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a><span class="co">#&gt; $reg</span></span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a><span class="co">#&gt; Call:</span></span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a><span class="co">#&gt; lm(formula = .m ~ is_alive + class)</span></span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a><span class="co">#&gt; Coefficients:</span></span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="co">#&gt;                    body       brain    </span></span>
+<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a><span class="co">#&gt; (Intercept)         36033.33      91.50</span></span>
+<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a><span class="co">#&gt; is_aliveTRUE       -35997.00      28.00</span></span>
+<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a><span class="co">#&gt; classDinosaurs            NA         NA</span></span>
+<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt; classElephantidae    4564.17    5038.00</span></span>
+<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt; classEquidae          317.72     417.50</span></span>
+<span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a><span class="co">#&gt; classFeline            15.32     -28.20</span></span>
+<span id="cb3-58"><a href="#cb3-58" tabindex="-1"></a><span class="co">#&gt; classMacropodidae      -1.33     -63.50</span></span>
+<span id="cb3-59"><a href="#cb3-59" tabindex="-1"></a><span class="co">#&gt; classPrimate           31.26     372.50</span></span>
+<span id="cb3-60"><a href="#cb3-60" tabindex="-1"></a><span class="co">#&gt; classRodent           -35.44    -114.67</span></span>
+<span id="cb3-61"><a href="#cb3-61" tabindex="-1"></a><span class="co">#&gt; classRuminant         232.96     228.75</span></span>
+<span id="cb3-62"><a href="#cb3-62" tabindex="-1"></a><span class="co">#&gt; classSus              155.67      60.50</span></span>
+<span id="cb3-63"><a href="#cb3-63" tabindex="-1"></a><span class="co">#&gt; classTalpidae         -36.21    -116.50</span></span></code></pre></div>
 <p>We have showcased several features of the <code>apply_*</code>
 functions:</p>
 <ul>
@@ -510,9 +514,9 @@ matrix and the second layer is for each function call.</p>
 <code>apply_column()</code> example:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>out <span class="ot">&lt;-</span> animals_ms <span class="sc">%&gt;%</span> </span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>   <span class="fu">apply_column</span>(exp,</span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>                <span class="fu">mean</span>(.j, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>                <span class="sc">~</span> <span class="fu">mean</span>(.j, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>                <span class="at">foo=</span>asinh,</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>                <span class="at">pow =</span> <span class="dv">2</span><span class="sc">^</span>.j,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>                <span class="at">pow =</span> <span class="sc">~</span> <span class="dv">2</span><span class="sc">^</span>.j,</span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>                <span class="at">reg =</span> <span class="sc">~</span> {</span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>                  is_alive <span class="ot">&lt;-</span> <span class="sc">!</span>is_extinct</span>
 <span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>                  <span class="fu">lm</span>(.j <span class="sc">~</span> is_alive <span class="sc">+</span> class)</span>
@@ -590,9 +594,9 @@ execute on the proper matrix/vector subsets.</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>animals_ms <span class="sc">%&gt;%</span> </span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="fu">row_group_by</span>(class) <span class="sc">%&gt;%</span> </span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="fu">apply_matrix</span>(exp,</span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>               <span class="fu">mean</span>(.m, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>               <span class="sc">~</span> <span class="fu">mean</span>(.m, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>               <span class="at">foo=</span>asinh,</span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>               <span class="at">pow =</span> <span class="dv">2</span><span class="sc">^</span>.m,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>               <span class="at">pow =</span> <span class="sc">~</span> <span class="dv">2</span><span class="sc">^</span>.m,</span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>               <span class="at">reg =</span> <span class="sc">~</span> {</span>
 <span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>                 is_alive <span class="ot">&lt;-</span> <span class="sc">!</span>is_extinct</span>
 <span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>                 <span class="fu">lm</span>(.m <span class="sc">~</span> is_alive)</span>
@@ -660,7 +664,7 @@ things to notice:</p>
 the outcome is vector.</li>
 </ul>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>animals_ms <span class="sc">%&gt;%</span> </span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>    <span class="fu">apply_matrix_dfl</span>(<span class="fu">mean</span>(.m, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>    <span class="fu">apply_matrix_dfl</span>(<span class="sc">~</span> <span class="fu">mean</span>(.m, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>                     <span class="at">MAD=</span>mad,</span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>                     <span class="at">reg =</span> <span class="sc">~</span> {</span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>                         is_alive <span class="ot">&lt;-</span> <span class="sc">!</span>is_extinct</span>
@@ -678,7 +682,7 @@ the outcome is vector.</li>
 <span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;                    &lt;dbl&gt; &lt;dbl&gt; &lt;list&gt;</span></span>
 <span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; 1                   4.18  2.35 &lt;mlm&gt;</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>animals_ms <span class="sc">%&gt;%</span> </span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>    <span class="fu">apply_column_dfl</span>(<span class="fu">mean</span>(.j, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>    <span class="fu">apply_column_dfl</span>(<span class="sc">~</span> <span class="fu">mean</span>(.j, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
 <span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                     <span class="at">MAD=</span>mad,</span>
 <span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>                     <span class="at">reg =</span> <span class="sc">~</span> {</span>
 <span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>                         is_alive <span class="ot">&lt;-</span> <span class="sc">!</span>is_extinct</span>
@@ -702,8 +706,8 @@ notice a difference in output format.</p>
 <p>The difference between the two lies when the vectors are of length
 &gt; 1.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>animals_ms <span class="sc">%&gt;%</span> </span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>    <span class="fu">apply_row_dfl</span>(<span class="at">rg =</span> <span class="fu">range</span>(.i),</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>                  <span class="at">qt =</span> <span class="fu">quantile</span>(.i, <span class="at">probs =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">75</span>)))   </span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>    <span class="fu">apply_row_dfl</span>(<span class="at">rg =</span> <span class="sc">~</span> <span class="fu">range</span>(.i),</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>                  <span class="at">qt =</span> <span class="sc">~</span> <span class="fu">quantile</span>(.i, <span class="at">probs =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">75</span>)))   </span>
 <span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt; $msr</span></span>
 <span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; # A tibble: 56 × 5</span></span>
 <span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt;    .rowname        rg.name     rg qt.name     qt</span></span>
@@ -736,8 +740,8 @@ notice a difference in output format.</p>
 <span id="cb8-33"><a href="#cb8-33" tabindex="-1"></a><span class="co">#&gt; 10 Guinea pig      ..2     1.70   75%     1.29 </span></span>
 <span id="cb8-34"><a href="#cb8-34" tabindex="-1"></a><span class="co">#&gt; # ℹ 46 more rows</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>animals_ms <span class="sc">%&gt;%</span> </span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>    <span class="fu">apply_row_dfw</span>(<span class="at">rg =</span> <span class="fu">range</span>(.i),</span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>                  <span class="at">qt =</span> <span class="fu">quantile</span>(.i, <span class="at">probs =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">75</span>)))   </span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>    <span class="fu">apply_row_dfw</span>(<span class="at">rg =</span> <span class="sc">~</span> <span class="fu">range</span>(.i),</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>                  <span class="at">qt =</span> <span class="sc">~</span> <span class="fu">quantile</span>(.i, <span class="at">probs =</span> <span class="fu">c</span>(.<span class="dv">25</span>, .<span class="dv">75</span>)))   </span>
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt; $msr</span></span>
 <span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; # A tibble: 28 × 5</span></span>
 <span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt;    .rowname        `rg ..1` `rg ..2` `qt 25%` `qt 75%`</span></span>
@@ -806,7 +810,7 @@ are equivalent to
 could be</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>animals_ms <span class="sc">%&gt;%</span> </span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>    <span class="fu">row_group_by</span>(class) <span class="sc">%&gt;%</span> </span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>    <span class="fu">apply_matrix_dfl</span>(<span class="at">n=</span><span class="fu">current_n_row</span>()) <span class="sc">%&gt;%</span> </span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>    <span class="fu">apply_matrix_dfl</span>(<span class="at">n =</span> <span class="sc">~</span> <span class="fu">current_n_row</span>()) <span class="sc">%&gt;%</span> </span>
 <span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>    .<span class="sc">$</span>msr</span>
 <span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; # A tibble: 11 × 2</span></span>
 <span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt;    class            n</span></span>
@@ -853,7 +857,7 @@ the pronouns <code>.data</code> (the trait annotation version) and
 <span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>})</span>
 <span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a></span>
 <span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>animals_ms <span class="sc">%&gt;%</span> </span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>    <span class="fu">apply_column_dfl</span>(<span class="fu">mean</span>(.j, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>    <span class="fu">apply_column_dfl</span>(<span class="sc">~</span> <span class="fu">mean</span>(.j, <span class="at">trim=</span>.<span class="dv">1</span>),</span>
 <span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>                     <span class="at">MAD=</span>mad,</span>
 <span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>                     <span class="at">reg =</span> <span class="sc">~</span> <span class="sc">!!</span>reg_expr)</span>
 <span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; $msr</span></span>

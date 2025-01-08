@@ -1,5 +1,7 @@
 test_that("matrixset general loop works", {
 
+  withr::local_options(lifecycle_verbosity = "quiet")
+
   expect_identical(apply_row(matrixset(NULL), mean), NULL)
   expect_identical(apply_column(matrixset(NULL), mean), NULL)
 
@@ -8,280 +10,441 @@ test_that("matrixset general loop works", {
   mn <- apply_row(student_results2, mean)
   M <- matrix_elm(student_results2,1)
   mn_ref <- list(failure=apply(M, 1, function(u) list(mean=mean(u)),simplify = FALSE))
-  mn_ref <- c(mn_ref, list(remedial=lapply(mn_ref$failure, function(u) lapply(u, function(v) NULL))))
+  mn_ref <- c(mn_ref, list(remedial = NULL))
+  # mn_ref <- c(mn_ref, list(remedial=lapply(mn_ref$failure, function(u) lapply(u, function(v) NULL))))
 
   expect_equal(mn, mn_ref)
 
 
 
 
-  mn <- apply_row(student_results, mean)
-  mn_ref <- lapply(seq(nmatrix(student_results)),
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     apply(M, 1, function(u) list(mean=mean(u)),simplify = FALSE)
-                   })
-  names(mn_ref) <- matrixnames(student_results)
 
-  expect_equal(mn, mn_ref)
-
-
-
-  mn <- apply_column(student_results, mean)
-  mn_ref <- lapply(seq(nmatrix(student_results)),
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     apply(M, 2, function(u) list(mean=mean(u)),simplify = FALSE)
-                   })
-  names(mn_ref) <- matrixnames(student_results)
-
-  expect_equal(mn, mn_ref)
-
-
-
-  mn <- apply_row(student_results, mn=mean)
-  mn_ref <- lapply(seq(nmatrix(student_results)),
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     apply(M, 1, function(u) list(mn=mean(u)),simplify = FALSE)
-                   })
-  names(mn_ref) <- matrixnames(student_results)
-
-  expect_equal(mn, mn_ref)
-
-
-
-  mn <- apply_column(student_results, mn=mean)
-  mn_ref <- lapply(seq(nmatrix(student_results)),
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     apply(M, 2, function(u) list(mn=mean(u)),simplify = FALSE)
-                   })
-  names(mn_ref) <- matrixnames(student_results)
-
-  expect_equal(mn, mn_ref)
-
-
-
-  ct <- apply_row(student_results, mn=mean, md=median(.i))
-  ct_ref <- lapply(seq(nmatrix(student_results)),
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     apply(M, 1, function(u) list(mn=mean(u),
-                                                  md=median(u)),
-                           simplify = FALSE)
-                   })
-  names(ct_ref) <- matrixnames(student_results)
-
-  expect_equal(ct, ct_ref)
-
-
-
-  ct <- apply_column(student_results, mn=mean, md=median(.j))
-  ct_ref <- lapply(seq(nmatrix(student_results)),
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     apply(M, 2, function(u) list(mn=mean(u),
-                                                  md=median(u)),
-                           simplify = FALSE)
-                   })
-  names(ct_ref) <- matrixnames(student_results)
-
-  expect_equal(ct, ct_ref)
-
-
-
-  ct <- apply_row(student_results, mn=mean, reg = lm(.i ~ national_average + program))
-  ct_ref <- lapply(seq(nmatrix(student_results)),
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     meta <- column_info(student_results)
-                     meta <- tibble::column_to_rownames(meta, ".colname")
-                     ans <- lapply(1:nrow(student_results),
-                            function(i) {
-                              meta$.i <- M[i,]
-                              list(mn=mean(M[i,]),
-                                   reg=eval(quote(lm(.i ~ national_average + program)), envir = meta))
-                            })
-                     names(ans) <- rownames(student_results)
-                     ans
-                   })
-  names(ct_ref) <- matrixnames(student_results)
-
-  expect_equal(ct, ct_ref, ignore_attr = TRUE)
-
-
-
-
-  ct <- apply_column(student_results, mn=mean, reg = lm(.j ~ teacher + class))
-  ct_ref <- lapply(seq(nmatrix(student_results)),
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     meta <- row_info(student_results)
-                     meta <- tibble::column_to_rownames(meta, ".rowname")
-                     ans <- lapply(1:ncol(student_results),
-                                   function(j) {
-                                     meta$.j <- M[,j]
-                                     list(mn=mean(M[,j]),
-                                          reg=eval(quote(lm(.j ~ teacher + class)), envir = meta))
-                                   })
-                     names(ans) <- colnames(student_results)
-                     ans
-                   })
-  names(ct_ref) <- matrixnames(student_results)
-
-  expect_equal(ct, ct_ref, ignore_attr = TRUE)
-
-
-
-
-  ct <- apply_row(student_results, mn=mean, reg = lm(.i ~ national_average + program),
-                 .matrix = 2)
-  ct_ref <- lapply(2,
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     meta <- column_info(student_results)
-                     meta <- tibble::column_to_rownames(meta, ".colname")
-                     ans <- lapply(1:nrow(student_results),
-                                   function(i) {
-                                     meta$.i <- M[i,]
-                                     list(mn=mean(M[i,]),
-                                          reg=eval(quote(lm(.i ~ national_average + program)), envir = meta))
-                                   })
-                     names(ans) <- rownames(student_results)
-                     ans
-                   })
-  names(ct_ref) <- matrixnames(student_results)[2]
-
-  expect_equal(ct, ct_ref, ignore_attr = TRUE)
-
-
-
-
-
-  ct <- apply_column(student_results, mn=mean, reg = lm(.j ~ teacher + class),
-                    .matrix = 2)
-  ct_ref <- lapply(2,
-                   function(m) {
-                     M <- matrix_elm(student_results,m)
-                     meta <- row_info(student_results)
-                     meta <- tibble::column_to_rownames(meta, ".rowname")
-                     ans <- lapply(1:ncol(student_results),
-                                   function(j) {
-                                     meta$.j <- M[,j]
-                                     list(mn=mean(M[,j]),
-                                          reg=eval(quote(lm(.j ~ teacher + class)), envir = meta))
-                                   })
-                     names(ans) <- colnames(student_results)
-                     ans
-                   })
-  names(ct_ref) <- matrixnames(student_results)[2]
-
-  expect_equal(ct, ct_ref, ignore_attr = TRUE)
-
-
-
-
-
-  e <- apply_row(student_results,
-                mn = {
-                  ii <- .i
-                  mean(ii)
-                })
-
-  e_ref <- lapply(seq(nmatrix(student_results)),
-                  function(m) {
-                    M <- matrix_elm(student_results,m)
-                    apply(M, 1, function(u) list(mn=mean(u)),simplify = FALSE)
-                  })
-  names(e_ref) <- matrixnames(student_results)
-
-  expect_equal(e, e_ref, ignore_attr = TRUE)
-
-
-
-
-
-  e <- apply_column(student_results,
-                mn = {
-                  jj <- .j
-                  mean(jj)
-                })
-
-  e_ref <- lapply(seq(nmatrix(student_results)),
-                  function(m) {
-                    M <- matrix_elm(student_results,m)
-                    apply(M, 2, function(u) list(mn=mean(u)),simplify = FALSE)
-                  })
-  names(e_ref) <- matrixnames(student_results)
-
-  expect_equal(e, e_ref, ignore_attr = TRUE)
-
-
-
-
-
-
-  e <- apply_row(student_results,
-                s={
-                  .i + school_average + previous_year_score
-                })
-
-  e_ref <- lapply(seq(nmatrix(student_results)),
-                  function(m) {
-                    M <- matrix_elm(student_results,m)
-                    row_meta <- row_info(student_results)
-                    col_meta <- column_info(student_results)
-                    s <- lapply(1:nrow(M), function(i) list(s=M[i,] + row_meta$previous_year_score[i] + col_meta$school_average))
-                    names(s) <- rownames(student_results)
-                    s
-                  })
-  names(e_ref) <- matrixnames(student_results)
-
-  expect_equal(e, e_ref, ignore_attr = TRUE)
-
-
-
-
-
-  e <- apply_column(student_results,
-                s={
-                  .j + school_average + previous_year_score
-                })
-
-  e_ref <- lapply(seq(nmatrix(student_results)),
-                  function(m) {
-                    M <- matrix_elm(student_results,m)
-                    row_meta <- row_info(student_results)
-                    col_meta <- column_info(student_results)
-                    s <- lapply(1:ncol(M), function(j) list(s=M[,j] + row_meta$previous_year_score + col_meta$school_average[j]))
-                    names(s) <- colnames(student_results)
-                    s
-                  })
-  names(e_ref) <- matrixnames(student_results)
-
-  expect_equal(e, e_ref, ignore_attr = TRUE)
+  create_expected <- function(midx, margin, ...)
+  {
+    fns <- rlang::enquos(..., .named = TRUE)
+
+    if (margin == "row") {
+      extract_info <- column_info
+      extract_info_compl <- row_info
+      tag_name <- ".colname"
+      tag_name_compl <- ".rowname"
+      pronoun <- ".i"
+      N <- nrow
+      mrgnames <- rownames
+    } else {
+      extract_info <- row_info
+      extract_info_compl <- column_info
+      tag_name <- ".rowname"
+      tag_name_compl <- ".colname"
+      pronoun <- ".j"
+      N <- ncol
+      mrgnames <- colnames
+    }
+
+    meta <-  extract_info(student_results)
+    meta <- tibble::column_to_rownames(meta, tag_name)
+
+    meta_compl <- extract_info_compl(student_results)
+    meta_compl <- tibble::column_to_rownames(meta_compl, tag_name_compl)
+
+    meta_env <- list2env(meta)
+
+    meta_mask <- rlang::new_data_mask(meta_env)
+
+    expected <- lapply(midx, function(m) {
+      M <- matrix_elm(student_results, m)
+
+      ans <- lapply(1:N(student_results),
+                    function(i) {
+                      meta_env[[pronoun]] <- if (margin == "row") M[i,] else M[,i]
+                      meta_env <- list2env(meta_compl[i, ], envir = meta_env)
+
+                      lapply(fns, function(f) rlang::eval_tidy(f, data = meta_mask))
+
+                    })
+      names(ans) <- mrgnames(student_results)
+      ans
+    })
+
+    names(expected) <- matrixnames(student_results)[midx]
+
+    expected
+
+  }
+
+
+
+  testcase <- list(# single function, not named, no params, all matrices
+                   quote(apply_row(student_results, mean)),
+                   # single function, named, no params, all matrices
+                   quote(apply_row(student_results, mn=mean)),
+                   # two functions, named, mix params/no params, all matrices
+                   quote(apply_row(student_results, mn=mean, md=~median(.i))),
+                   quote(apply_row(student_results, mn=mean,
+                                   reg = ~lm(.i ~ national_average + program))),
+                   quote(apply_row(student_results, mn=mean,
+                                   reg = ~lm(.i ~ national_average + program),
+                                   .matrix = 2)),
+                   quote(apply_row(student_results,
+                                   mn = ~{
+                                     ii <- .i
+                                     mean(ii)
+                                   })),
+                   quote(apply_row(student_results,
+                                   s=~{
+                                     .i + school_average + previous_year_score
+                                   })),
+
+
+
+
+                   quote(apply_column(student_results, mean)),
+                   quote(apply_column(student_results, mn=mean)),
+                   quote(apply_column(student_results, mn=mean, md=~median(.j))),
+                   quote(apply_column(student_results, mn=mean,
+                                      reg = ~lm(.j ~ teacher + class))),
+                   quote(apply_column(student_results, mn=mean,
+                                      reg = ~lm(.j ~ teacher + class),
+                                      .matrix = 2)),
+                   quote(apply_column(student_results,
+                                      mn = ~{
+                                        jj <- .j
+                                        mean(jj)
+                                      })),
+                   quote(apply_column(student_results,
+                                      s=~{
+                                        .j + school_average + previous_year_score
+                                      }))
+                   )
+
+
+  expected_expr <- list(quote(create_expected(seq(nmatrix(student_results)),
+                                              "row", mean = mean(.i))),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "row", mn=mean(.i))),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "row", mn=mean(.i), md=median(.i))),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "row", mn=mean(.i),
+                                              reg = lm(.i ~ national_average + program))),
+                        quote(create_expected(2, "row", mn=mean(.i),
+                                              reg = lm(.i ~ national_average + program))),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "row",
+                                              mn = {
+                                                ii <- .i
+                                                mean(ii)
+                                              })),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "row",
+                                              s={
+                                                .i + school_average + previous_year_score
+                                              })),
+
+
+
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "col", mean = mean(.j))),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "col", mn=mean(.j))),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "col", mn=mean(.j), md=median(.j))),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "col", mn=mean(.j),
+                                              reg = lm(.j ~ teacher + class))),
+                        quote(create_expected(2, "col", mn=mean(.j),
+                                              reg = lm(.j ~ teacher + class))),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "col",
+                                              mn = {
+                                                jj <- .j
+                                                mean(jj)
+                                              })),
+                        quote(create_expected(seq(nmatrix(student_results)),
+                                              "col",
+                                              s={
+                                                .j + school_average + previous_year_score
+                                              }))
+                        )
+
+  for (case in seq_along(testcase))
+  {
+    testthis <- eval(testcase[[case]])
+    expected <- eval(expected_expr[[case]])
+    expect_equal(testthis, expected, ignore_attr = TRUE)
+  }
+
+
+
+  # mn <- apply_row(student_results, mean)
+  # mn_ref <- lapply(seq(nmatrix(student_results)),
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    apply(M, 1, function(u) list(mean=mean(u)),simplify = FALSE)
+  #                  })
+  # names(mn_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(mn, mn_ref)
+  #
+  #
+  #
+  # mn <- apply_row(student_results, mn=mean)
+  # mn_ref <- lapply(seq(nmatrix(student_results)),
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    apply(M, 1, function(u) list(mn=mean(u)),simplify = FALSE)
+  #                  })
+  # names(mn_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(mn, mn_ref)
+  #
+  #
+  #
+  # ct <- apply_row(student_results, mn=mean, md=~median(.i))
+  # ct_ref <- lapply(seq(nmatrix(student_results)),
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    apply(M, 1, function(u) list(mn=mean(u),
+  #                                                 md=median(u)),
+  #                          simplify = FALSE)
+  #                  })
+  # names(ct_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(ct, ct_ref)
+  #
+  #
+  #
+  # ct <- apply_row(student_results, mn=mean, reg = ~lm(.i ~ national_average + program))
+  # ct_ref <- lapply(seq(nmatrix(student_results)),
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    meta <- column_info(student_results)
+  #                    meta <- tibble::column_to_rownames(meta, ".colname")
+  #                    ans <- lapply(1:nrow(student_results),
+  #                                  function(i) {
+  #                                    meta$.i <- M[i,]
+  #                                    list(mn=mean(M[i,]),
+  #                                         reg=eval(quote(lm(.i ~ national_average + program)), envir = meta))
+  #                                  })
+  #                    names(ans) <- rownames(student_results)
+  #                    ans
+  #                  })
+  # names(ct_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(ct, ct_ref, ignore_attr = TRUE)
+  #
+  #
+  #
+  # ct <- apply_row(student_results, mn=mean, reg = ~ lm(.i ~ national_average + program),
+  #                 .matrix = 2)
+  # ct_ref <- lapply(2,
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    meta <- column_info(student_results)
+  #                    meta <- tibble::column_to_rownames(meta, ".colname")
+  #                    ans <- lapply(1:nrow(student_results),
+  #                                  function(i) {
+  #                                    meta$.i <- M[i,]
+  #                                    list(mn=mean(M[i,]),
+  #                                         reg=eval(quote(lm(.i ~ national_average + program)), envir = meta))
+  #                                  })
+  #                    names(ans) <- rownames(student_results)
+  #                    ans
+  #                  })
+  # names(ct_ref) <- matrixnames(student_results)[2]
+  #
+  # expect_equal(ct, ct_ref, ignore_attr = TRUE)
+  #
+  #
+  #
+  #
+  #
+  # mn <- apply_column(student_results, mean)
+  # mn_ref <- lapply(seq(nmatrix(student_results)),
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    apply(M, 2, function(u) list(mean=mean(u)),simplify = FALSE)
+  #                  })
+  # names(mn_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(mn, mn_ref)
+  #
+  #
+  #
+  # mn <- apply_column(student_results, mn=mean)
+  # mn_ref <- lapply(seq(nmatrix(student_results)),
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    apply(M, 2, function(u) list(mn=mean(u)),simplify = FALSE)
+  #                  })
+  # names(mn_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(mn, mn_ref)
+  #
+  #
+  #
+  #
+  # ct <- apply_column(student_results, mn=mean, md=~median(.j))
+  # ct_ref <- lapply(seq(nmatrix(student_results)),
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    apply(M, 2, function(u) list(mn=mean(u),
+  #                                                 md=median(u)),
+  #                          simplify = FALSE)
+  #                  })
+  # names(ct_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(ct, ct_ref)
+  #
+  #
+  #
+  #
+  # ct <- apply_column(student_results, mn=mean, reg = ~lm(.j ~ teacher + class))
+  # ct_ref <- lapply(seq(nmatrix(student_results)),
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    meta <- row_info(student_results)
+  #                    meta <- tibble::column_to_rownames(meta, ".rowname")
+  #                    ans <- lapply(1:ncol(student_results),
+  #                                  function(j) {
+  #                                    meta$.j <- M[,j]
+  #                                    list(mn=mean(M[,j]),
+  #                                         reg=eval(quote(lm(.j ~ teacher + class)), envir = meta))
+  #                                  })
+  #                    names(ans) <- colnames(student_results)
+  #                    ans
+  #                  })
+  # names(ct_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(ct, ct_ref, ignore_attr = TRUE)
+  #
+  #
+  #
+  #
+  #
+  # ct <- apply_column(student_results, mn=mean, reg = ~lm(.j ~ teacher + class),
+  #                   .matrix = 2)
+  # ct_ref <- lapply(2,
+  #                  function(m) {
+  #                    M <- matrix_elm(student_results,m)
+  #                    meta <- row_info(student_results)
+  #                    meta <- tibble::column_to_rownames(meta, ".rowname")
+  #                    ans <- lapply(1:ncol(student_results),
+  #                                  function(j) {
+  #                                    meta$.j <- M[,j]
+  #                                    list(mn=mean(M[,j]),
+  #                                         reg=eval(quote(lm(.j ~ teacher + class)), envir = meta))
+  #                                  })
+  #                    names(ans) <- colnames(student_results)
+  #                    ans
+  #                  })
+  # names(ct_ref) <- matrixnames(student_results)[2]
+  #
+  # expect_equal(ct, ct_ref, ignore_attr = TRUE)
+  #
+  #
+  #
+  #
+  #
+  # e <- apply_row(student_results,
+  #               mn = ~ {
+  #                 ii <- .i
+  #                 mean(ii)
+  #               })
+  #
+  # e_ref <- lapply(seq(nmatrix(student_results)),
+  #                 function(m) {
+  #                   M <- matrix_elm(student_results,m)
+  #                   apply(M, 1, function(u) list(mn=mean(u)),simplify = FALSE)
+  #                 })
+  # names(e_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(e, e_ref, ignore_attr = TRUE)
+  #
+  #
+  #
+  #
+  #
+  # e <- apply_column(student_results,
+  #               mn = ~ {
+  #                 jj <- .j
+  #                 mean(jj)
+  #               })
+  #
+  # e_ref <- lapply(seq(nmatrix(student_results)),
+  #                 function(m) {
+  #                   M <- matrix_elm(student_results,m)
+  #                   apply(M, 2, function(u) list(mn=mean(u)),simplify = FALSE)
+  #                 })
+  # names(e_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(e, e_ref, ignore_attr = TRUE)
+  #
+  #
+  #
+  #
+  #
+  #
+  # e <- apply_row(student_results,
+  #               s=~{
+  #                 .i + school_average + previous_year_score
+  #               })
+  #
+  # e_ref <- lapply(seq(nmatrix(student_results)),
+  #                 function(m) {
+  #                   M <- matrix_elm(student_results,m)
+  #                   row_meta <- row_info(student_results)
+  #                   col_meta <- column_info(student_results)
+  #                   s <- lapply(1:nrow(M), function(i) list(s=M[i,] + row_meta$previous_year_score[i] + col_meta$school_average))
+  #                   names(s) <- rownames(student_results)
+  #                   s
+  #                 })
+  # names(e_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(e, e_ref, ignore_attr = TRUE)
+  #
+  #
+  #
+  #
+  #
+  # e <- apply_column(student_results,
+  #               s=~{
+  #                 .j + school_average + previous_year_score
+  #               })
+  #
+  # e_ref <- lapply(seq(nmatrix(student_results)),
+  #                 function(m) {
+  #                   M <- matrix_elm(student_results,m)
+  #                   row_meta <- row_info(student_results)
+  #                   col_meta <- column_info(student_results)
+  #                   s <- lapply(1:ncol(M), function(j) list(s=M[,j] + row_meta$previous_year_score + col_meta$school_average[j]))
+  #                   names(s) <- colnames(student_results)
+  #                   s
+  #                 })
+  # names(e_ref) <- matrixnames(student_results)
+  #
+  # expect_equal(e, e_ref, ignore_attr = TRUE)
 
 
 
 
 
   # .data
-  rg <- apply_row(student_results, reg = unname(coef(lm(.i ~ .data[["national_average"]] + program))))
-  rg_ref <- apply_row(student_results, reg = unname(coef(lm(.i ~ national_average + program))))
+  rg <- apply_row(student_results, reg = ~unname(coef(lm(.i ~ .data[["national_average"]] + program))))
+  rg_ref <- apply_row(student_results, reg = ~unname(coef(lm(.i ~ national_average + program))))
   expect_identical(rg, rg_ref)
 
 
 
-  rg <- apply_column(student_results, reg = unname(coef(lm(.j ~ .data[["teacher"]] + class))))
-  rg_ref <- apply_column(student_results, reg = unname(coef(lm(.j ~ teacher + class))))
+  rg <- apply_column(student_results, reg = ~ unname(coef(lm(.j ~ .data[["teacher"]] + class))))
+  rg_ref <- apply_column(student_results, reg = ~ unname(coef(lm(.j ~ teacher + class))))
   expect_identical(rg, rg_ref)
 
 
 
 
   previous_year_score <- 0.5
-  avr <- apply_row(student_results, av=mean(c(.i, previous_year_score)))
+  avr <- apply_row(student_results, av=~mean(c(.i, previous_year_score)))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                   function(m) {
                     M <- matrix_elm(student_results,m)
@@ -296,7 +459,7 @@ test_that("matrixset general loop works", {
 
 
   school_average <- 0.5
-  avr <- apply_column(student_results, av=mean(c(.j, school_average)))
+  avr <- apply_column(student_results, av=~mean(c(.j, school_average)))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                     function(m) {
                       M <- matrix_elm(student_results,m)
@@ -310,8 +473,38 @@ test_that("matrixset general loop works", {
 
 
 
+  previous_year_average <- 0.5
+  avr <- apply_row(student_results, av=~mean(c(.i, previous_year_average)))
+  avr_ref <- lapply(seq(nmatrix(student_results)),
+                    function(m) {
+                      M <- matrix_elm(student_results,m)
+                      row_meta <- row_info(student_results)
+                      s <- lapply(1:nrow(M), function(i) list(av=mean(c(M[i,], previous_year_average))))
+                      names(s) <- rownames(student_results)
+                      s
+                    })
+  names(avr_ref) <- matrixnames(student_results)
+  expect_identical(avr, avr_ref)
+
+
+
+  prior_school_average <- 0.5
+  avr <- apply_column(student_results, av=~mean(c(.j, prior_school_average)))
+  avr_ref <- lapply(seq(nmatrix(student_results)),
+                    function(m) {
+                      M <- matrix_elm(student_results,m)
+                      col_meta <- column_info(student_results)
+                      s <- lapply(1:ncol(M), function(j) list(av=mean(c(M[,j], prior_school_average))))
+                      names(s) <- colnames(student_results)
+                      s
+                    })
+  names(avr_ref) <- matrixnames(student_results)
+  expect_identical(avr, avr_ref)
+
+
+
   previous_year_score <- 0.5
-  avr <- apply_row(student_results, av=mean(c(.i, .env$previous_year_score)))
+  avr <- apply_row(student_results, av=~mean(c(.i, .env$previous_year_score)))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                     function(m) {
                       M <- matrix_elm(student_results,m)
@@ -326,7 +519,7 @@ test_that("matrixset general loop works", {
 
 
   school_average <- 0.5
-  avr <- apply_column(student_results, av=mean(c(.j, .env$school_average)))
+  avr <- apply_column(student_results, av=~mean(c(.j, .env$school_average)))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                     function(m) {
                       M <- matrix_elm(student_results,m)
@@ -342,7 +535,7 @@ test_that("matrixset general loop works", {
 
 
   # 1-row/1 column
-  avr <- apply_column(student_results[,1,], avr = mean(.j))
+  avr <- apply_column(student_results[,1,], avr = ~mean(.j))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
                      M <- matrix_elm(student_results,m)
@@ -355,7 +548,7 @@ test_that("matrixset general loop works", {
 
 
 
-  avr <- apply_column(student_results[1,1,], avr = mean(.j))
+  avr <- apply_column(student_results[1,1,], avr = ~ mean(.j))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                     function(m) {
                       M <- matrix_elm(student_results,m)
@@ -368,7 +561,7 @@ test_that("matrixset general loop works", {
 
 
 
-  avr <- apply_row(student_results[1,,], avr = mean(.i))
+  avr <- apply_row(student_results[1,,], avr = ~ mean(.i))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                     function(m) {
                       M <- matrix_elm(student_results,m)
@@ -380,7 +573,7 @@ test_that("matrixset general loop works", {
 
 
 
-  avr <- apply_row(student_results[1,1,], avr = mean(.i))
+  avr <- apply_row(student_results[1,1,], avr = ~ mean(.i))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                     function(m) {
                       M <- matrix_elm(student_results,m)
@@ -468,6 +661,44 @@ test_that("matrixset general loop works", {
   names(grmn_ref) <- matrixnames(student_results)
   expect_identical(grmn, grmn_ref)
 
+
+
+  grmn <- apply_row(row_group_by(column_group_by(student_results, program),
+                                 class, teacher), mn=mean)
+  grs <- column_group_meta(column_group_by(student_results, program))
+  mn_ref <- lapply(seq(nmatrix(student_results)),
+                   function(m) {
+                     ans <- grs
+                     ans$.rows <- NULL
+                     grmn_ref <- lapply(grs$.rows, function(gr) {
+                       M <- matrix_elm(student_results,m)
+                       apply(M[, gr, drop = FALSE], 1, function(u) list(mn=mean(u)),simplify = FALSE)
+                     })
+                     ans$.vals <- grmn_ref
+                     ans
+                   })
+  names(mn_ref) <- matrixnames(student_results)
+  expect_identical(grmn, mn_ref)
+
+
+
+
+  grmn <- apply_column(column_group_by(row_group_by(student_results, teacher, class),
+                                       program), mn=mean)
+  grs <- row_group_meta(row_group_by(student_results, teacher, class))
+  grmn_ref <- lapply(seq(nmatrix(student_results)), function(m) {
+    ans <- grs
+    ans$.rows <- NULL
+    mn_ref <- lapply(grs$.rows, function(gr) {
+      M <- matrix_elm(student_results,m)
+      apply(M[gr, , drop = FALSE], 2, function(u) list(mn=mean(u)),simplify = FALSE)
+    })
+    ans$.vals <- mn_ref
+    ans
+  })
+  names(grmn_ref) <- matrixnames(student_results)
+  expect_identical(grmn, grmn_ref)
+
 })
 
 
@@ -475,6 +706,8 @@ test_that("matrixset general loop works", {
 
 
 test_that("matrixset 'long' loop works", {
+
+  withr::local_options(lifecycle_verbosity = "quiet")
 
   # with null
   expect_identical(apply_row_dfl(matrixset(NULL), mean), NULL)
@@ -487,7 +720,8 @@ test_that("matrixset 'long' loop works", {
   M <- matrix_elm(student_results2,1)
   ct_ref <- list(failure=t(apply(M, 1, function(u) c(mn=mean(u), md=median(u)),simplify = TRUE)))
   ct_ref$failure <- tibble::as_tibble(ct_ref$failure, rownames = ".rowname")
-  ct_ref$remedial <- tibble::tibble(.rowname = character(), mn = logical(), md = logical())
+  ct_ref <- c(ct_ref, remedial = list(NULL))
+  # ct_ref$remedial <- tibble::tibble(.rowname = character(), mn = logical(), md = logical())
   expect_identical(ct, ct_ref)
 
 
@@ -498,7 +732,8 @@ test_that("matrixset 'long' loop works", {
   M <- matrix_elm(student_results2,1)
   ct_ref <- list(failure=t(apply(M, 2, function(u) c(mn=mean(u), md=median(u)),simplify = TRUE)))
   ct_ref$failure <- tibble::as_tibble(ct_ref$failure, rownames = ".colname")
-  ct_ref$remedial <- tibble::tibble(.colname = character(), mn = logical(), md = logical())
+  ct_ref <- c(ct_ref, remedial = list(NULL))
+  # ct_ref$remedial <- tibble::tibble(.colname = character(), mn = logical(), md = logical())
   expect_identical(ct, ct_ref)
 
 
@@ -524,7 +759,7 @@ test_that("matrixset 'long' loop works", {
 
 
   # showcase > 1 length answer
-  summ <- apply_row_dfl(student_results, mn=c(mean(.i), median(.i)), rg=range(.i))
+  summ <- apply_row_dfl(student_results, mn=~c(mean(.i), median(.i)), rg=~range(.i))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   summ_ref <- lapply(M,
                      function(m) {
@@ -547,7 +782,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  summ <- apply_column_dfl(student_results, mn=c(mean(.j), median(.j)), rg=range(.j))
+  summ <- apply_column_dfl(student_results, mn=~c(mean(.j), median(.j)), rg=~range(.j))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   summ_ref <- lapply(M,
                      function(m) {
@@ -570,7 +805,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  summ <- apply_row_dfl(student_results, mn=c(mn=mean(.i), md=median(.i)), rg=range(.i))
+  summ <- apply_row_dfl(student_results, mn=~c(mn=mean(.i), md=median(.i)), rg=~range(.i))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   summ_ref <- lapply(M,
                      function(m) {
@@ -594,7 +829,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  summ <- apply_column_dfl(student_results, mn=c(mn=mean(.j), md=median(.j)), rg=range(.j))
+  summ <- apply_column_dfl(student_results, mn=~c(mn=mean(.j), md=median(.j)), rg=~range(.j))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   summ_ref <- lapply(M,
                      function(m) {
@@ -621,7 +856,7 @@ test_that("matrixset 'long' loop works", {
   # error
   expect_error(apply_row_dfl(student_results,
                             mn=mean,
-                            reg = lm(.i ~ national_average + program)),
+                            reg = ~lm(.i ~ national_average + program)),
                "vectors must be of the same length")
 
 
@@ -629,14 +864,14 @@ test_that("matrixset 'long' loop works", {
 
   expect_error(apply_column_dfl(student_results,
                             mn=mean,
-                            reg = lm(.j ~ teacher + previous_year_score)),
+                            reg = ~lm(.j ~ teacher + previous_year_score)),
                "vectors must be of the same length")
 
 
 
 
   # the trick
-  summ <- apply_row_dfl(student_results, mn=mean, reg = list(lm(.i ~ national_average + program)))
+  summ <- apply_row_dfl(student_results, mn=mean, reg = ~list(lm(.i ~ national_average + program)))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   meta <- column_info(student_results)
   summ_ref <- lapply(M,
@@ -653,7 +888,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  summ <- apply_column_dfl(student_results, mn=mean, reg = list(lm(.j ~ teacher + previous_year_score)))
+  summ <- apply_column_dfl(student_results, mn=mean, reg = ~list(lm(.j ~ teacher + previous_year_score)))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   meta <- row_info(student_results)
   summ_ref <- lapply(M,
@@ -670,7 +905,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  summ <- apply_row_dfl(student_results, reg = list(lm(.i ~ national_average), lm(.i ~ program)))
+  summ <- apply_row_dfl(student_results, reg = ~list(lm(.i ~ national_average), lm(.i ~ program)))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   meta <- column_info(student_results)
   summ_ref <- lapply(M,
@@ -696,7 +931,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  summ <- apply_column_dfl(student_results, reg = list(lm(.j ~ class), lm(.j ~ teacher)))
+  summ <- apply_column_dfl(student_results, reg = ~ list(lm(.j ~ class), lm(.j ~ teacher)))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   meta <- row_info(student_results)
   summ_ref <- lapply(M,
@@ -724,11 +959,11 @@ test_that("matrixset 'long' loop works", {
 
 
   # this should fail
-  expect_error(apply_row_dfl(student_results, mn=mean(.i), rg=range(.i)),
+  expect_error(apply_row_dfl(student_results, mn=~mean(.i), rg=~range(.i)),
                "vectors must be of the same length")
 
 
-  expect_error(apply_column_dfl(student_results, mn=mean(.j), rg=range(.j)),
+  expect_error(apply_column_dfl(student_results, mn=~mean(.j), rg=~range(.j)),
                "vectors must be of the same length")
 
 
@@ -791,7 +1026,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  grmn <- apply_row_dfl(column_group_by(student_results, program), mn=mean, md=median(.i))
+  grmn <- apply_row_dfl(column_group_by(student_results, program), mn=mean, md=~median(.i))
   grs <- column_group_meta(column_group_by(student_results, program))
   mn_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
@@ -816,7 +1051,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  grmn <- apply_column_dfl(row_group_by(student_results, teacher, class), mn=mean, md=median(.j))
+  grmn <- apply_column_dfl(row_group_by(student_results, teacher, class), mn=mean, md=~median(.j))
   grs <- row_group_meta(row_group_by(student_results, teacher, class))
   grmn_ref <- lapply(seq(nmatrix(student_results)), function(m) {
     ans <- grs
@@ -840,7 +1075,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  grmn <- apply_row_dfl(column_group_by(student_results, program), ct=c(mean(.i), median(.i)))
+  grmn <- apply_row_dfl(column_group_by(student_results, program), ct=~c(mean(.i), median(.i)))
   grs <- column_group_meta(column_group_by(student_results, program))
   mn_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
@@ -865,7 +1100,7 @@ test_that("matrixset 'long' loop works", {
 
 
 
-  grmn <- apply_column_dfl(row_group_by(student_results, teacher, class), ct=c(mean(.j), median(.j)))
+  grmn <- apply_column_dfl(row_group_by(student_results, teacher, class), ct=~c(mean(.j), median(.j)))
   grs <- row_group_meta(row_group_by(student_results, teacher, class))
   grmn_ref <- lapply(seq(nmatrix(student_results)), function(m) {
     ans <- grs
@@ -899,6 +1134,8 @@ test_that("matrixset 'long' loop works", {
 
 test_that("matrixset 'wide' loop works", {
 
+  withr::local_options(lifecycle_verbosity = "quiet")
+
   # with null
   expect_identical(apply_row_dfw(matrixset(NULL), mean), NULL)
   expect_identical(apply_column_dfw(matrixset(NULL), mean), NULL)
@@ -910,7 +1147,8 @@ test_that("matrixset 'wide' loop works", {
   M <- matrix_elm(student_results2,1)
   ct_ref <- list(failure=t(apply(M, 1, function(u) c(mn=mean(u), md=median(u)),simplify = TRUE)))
   ct_ref$failure <- tibble::as_tibble(ct_ref$failure, rownames = ".rowname")
-  ct_ref$remedial <- tibble::tibble(.rowname = character(), mn = logical(), md = logical())
+  ct_ref <- c(ct_ref, remedial = list(NULL))
+  # ct_ref$remedial <- tibble::tibble(.rowname = character(), mn = logical(), md = logical())
   expect_identical(ct, ct_ref)
 
 
@@ -921,7 +1159,8 @@ test_that("matrixset 'wide' loop works", {
   M <- matrix_elm(student_results2,1)
   ct_ref <- list(failure=t(apply(M, 2, function(u) c(mn=mean(u), md=median(u)),simplify = TRUE)))
   ct_ref$failure <- tibble::as_tibble(ct_ref$failure, rownames = ".colname")
-  ct_ref$remedial <- tibble::tibble(.colname = character(), mn = logical(), md = logical())
+  ct_ref <- c(ct_ref, remedial = list(NULL))
+  # ct_ref$remedial <- tibble::tibble(.colname = character(), mn = logical(), md = logical())
   expect_identical(ct, ct_ref)
 
 
@@ -947,7 +1186,7 @@ test_that("matrixset 'wide' loop works", {
 
 
   # showcase > 1 length answer
-  summ <- apply_row_dfw(student_results, mn=c(mean(.i), median(.i)), rg=range(.i))
+  summ <- apply_row_dfw(student_results, mn=~c(mean(.i), median(.i)), rg=~range(.i))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   summ_ref <- lapply(M,
                      function(m) {
@@ -959,7 +1198,7 @@ test_that("matrixset 'wide' loop works", {
 
 
 
-  summ <- apply_column_dfw(student_results, mn=c(mean(.j), median(.j)), rg=range(.j))
+  summ <- apply_column_dfw(student_results, mn=~c(mean(.j), median(.j)), rg=~range(.j))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   summ_ref <- lapply(M,
                      function(m) {
@@ -971,7 +1210,7 @@ test_that("matrixset 'wide' loop works", {
 
 
 
-  summ <- apply_row_dfw(student_results, mn=c(mn=mean(.i), md=median(.i)), rg=range(.i))
+  summ <- apply_row_dfw(student_results, mn=~c(mn=mean(.i), md=median(.i)), rg=~range(.i))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   summ_ref <- lapply(M,
                      function(m) {
@@ -983,7 +1222,7 @@ test_that("matrixset 'wide' loop works", {
 
 
 
-  summ <- apply_column_dfw(student_results, mn=c(mn=mean(.j), md=median(.j)), rg=range(.j))
+  summ <- apply_column_dfw(student_results, mn=~c(mn=mean(.j), md=median(.j)), rg=~range(.j))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   summ_ref <- lapply(M,
                      function(m) {
@@ -998,7 +1237,7 @@ test_that("matrixset 'wide' loop works", {
   # error
   expect_error(apply_row_dfw(student_results,
                             mn=mean,
-                            reg = lm(.i ~ national_average + program)),
+                            reg = ~lm(.i ~ national_average + program)),
                "vectors must be of the same length")
 
 
@@ -1006,14 +1245,14 @@ test_that("matrixset 'wide' loop works", {
 
   expect_error(apply_column_dfw(student_results,
                                mn=mean,
-                               reg = lm(.j ~ teacher + previous_year_score)),
+                               reg = ~lm(.j ~ teacher + previous_year_score)),
                "vectors must be of the same length")
 
 
 
 
   # the trick
-  summ <- apply_row_dfw(student_results, mn=mean, reg = list(lm(.i ~ national_average + program)))
+  summ <- apply_row_dfw(student_results, mn=mean, reg = ~list(lm(.i ~ national_average + program)))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   meta <- column_info(student_results)
   summ_ref <- lapply(M,
@@ -1030,7 +1269,7 @@ test_that("matrixset 'wide' loop works", {
 
 
 
-  summ <- apply_column_dfw(student_results, mn=mean, reg = list(lm(.j ~ teacher + previous_year_score)))
+  summ <- apply_column_dfw(student_results, mn=mean, reg = ~list(lm(.j ~ teacher + previous_year_score)))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   meta <- row_info(student_results)
   summ_ref <- lapply(M,
@@ -1046,7 +1285,7 @@ test_that("matrixset 'wide' loop works", {
 
 
 
-  summ <- apply_row_dfw(student_results, reg = list(national = lm(.i ~ national_average), program = lm(.i ~ program)))
+  summ <- apply_row_dfw(student_results, reg = ~list(national = lm(.i ~ national_average), program = lm(.i ~ program)))
   M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
   meta <- column_info(student_results)
   summ_ref <- lapply(M,
@@ -1064,13 +1303,32 @@ test_that("matrixset 'wide' loop works", {
   expect_equal(summ, summ_ref, ignore_attr = TRUE)
 
 
+
+  # summ <- apply_column_dfw(student_results, reg = list(teacher = lm(.j ~ teacher), score = lm(.j ~ previous_year_score)))
+  # M <- student_results[,,,keep_annotation = FALSE, warn_class_change = FALSE]
+  # meta <- column_info(student_results)
+  # summ_ref <- lapply(M,
+  #                    function(m) {
+  #                      tibble::tibble(.rowname = rownames(m),
+  #                                     `reg national` = unname(apply(m,1,function(x) {
+  #                                       meta$.i <- x
+  #                                       eval(quote(lm(.i ~ national_average)), envir = meta)
+  #                                     })),
+  #                                     `reg program` = unname(apply(m,1,function(x) {
+  #                                       meta$.i <- x
+  #                                       eval(quote(lm(.i ~ program)), envir = meta)
+  #                                     })))
+  #                    })
+  # expect_equal(summ, summ_ref, ignore_attr = TRUE)
+
+
   #
   # # this should fail
-  expect_error(apply_row_dfw(student_results, mn=mean(.i), rg=range(.i)),
+  expect_error(apply_row_dfw(student_results, mn=~mean(.i), rg=~range(.i)),
                "vectors must be of the same length")
 
 
-  expect_error(apply_column_dfw(student_results, mn=mean(.j), rg=range(.j)),
+  expect_error(apply_column_dfw(student_results, mn=~mean(.j), rg=~range(.j)),
                "vectors must be of the same length")
 
 
@@ -1130,7 +1388,7 @@ test_that("matrixset 'wide' loop works", {
 
 
 
-  grmn <- apply_row_dfw(column_group_by(student_results, program), mn=mean, md=median(.i))
+  grmn <- apply_row_dfw(column_group_by(student_results, program), mn=mean, md=~median(.i))
   grs <- column_group_meta(column_group_by(student_results, program))
   mn_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
@@ -1155,7 +1413,7 @@ test_that("matrixset 'wide' loop works", {
 
 
 
-  grmn <- apply_column_dfw(row_group_by(student_results, teacher, class), mn=mean, md=median(.j))
+  grmn <- apply_column_dfw(row_group_by(student_results, teacher, class), mn=mean, md=~median(.j))
   grs <- row_group_meta(row_group_by(student_results, teacher, class))
   grmn_ref <- lapply(seq(nmatrix(student_results)), function(m) {
     ans <- grs
@@ -1179,7 +1437,7 @@ test_that("matrixset 'wide' loop works", {
 
 
 
-  grmn <- apply_row_dfw(column_group_by(student_results, program), ct=c(mean(.i), median(.i)))
+  grmn <- apply_row_dfw(column_group_by(student_results, program), ct=~c(mean(.i), median(.i)))
   grs <- column_group_meta(column_group_by(student_results, program))
   mn_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
@@ -1204,7 +1462,7 @@ test_that("matrixset 'wide' loop works", {
 
 
 
-  grmn <- apply_column_dfw(row_group_by(student_results, teacher, class), ct=c(mean(.j), median(.j)))
+  grmn <- apply_column_dfw(row_group_by(student_results, teacher, class), ct=~c(mean(.j), median(.j)))
   grs <- row_group_meta(row_group_by(student_results, teacher, class))
   grmn_ref <- lapply(seq(nmatrix(student_results)), function(m) {
     ans <- grs
@@ -1230,9 +1488,9 @@ test_that("matrixset 'wide' loop works", {
 
 
   grmn <- apply_row_dfw(column_group_by(student_results, program),
-                       ct=c(mn=mean(.i), md=median(.i)),
+                       ct=~c(mn=mean(.i), md=median(.i)),
                        rg=range,
-                       fit=list(lm(.i ~ 1), lm(.i ~ school_average)))
+                       fit=~list(lm(.i ~ 1), lm(.i ~ school_average)))
   grs <- column_group_meta(column_group_by(student_results, program))
   mn_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
@@ -1270,9 +1528,9 @@ test_that("matrixset 'wide' loop works", {
 
 
   grmn <- apply_column_dfw(row_group_by(student_results, teacher, class),
-                          ct=c(mn=mean(.j), md=median(.j)),
+                          ct=~c(mn=mean(.j), md=median(.j)),
                           rg=range,
-                          fit=list(lm(.j ~ 1), lm(.j ~ previous_year_score)))
+                          fit=~list(lm(.j ~ 1), lm(.j ~ previous_year_score)))
   grs <- row_group_meta(row_group_by(student_results, teacher, class))
   mn_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
@@ -1318,13 +1576,16 @@ test_that("matrixset 'wide' loop works", {
 
 test_that("matrixset matrix loop works", {
 
+  withr::local_options(lifecycle_verbosity = "quiet")
+
   expect_identical(apply_matrix(matrixset(NULL), mean), NULL)
 
   student_results2 <- student_results
   matrix_elm(student_results2,2) <- NULL
   mn <- apply_matrix(student_results2, mean)
   M <- matrix_elm(student_results2,1)
-  mn_ref <- list(failure=list(mean=mean(M)), remedial=list(mean=NULL))
+  # mn_ref <- list(failure=list(mean=mean(M)), remedial=list(mean=NULL))
+  mn_ref <- list(failure=list(mean=mean(M)), remedial=NULL)
 
   expect_equal(mn, mn_ref)
 
@@ -1355,7 +1616,7 @@ test_that("matrixset matrix loop works", {
 
 
 
-  ct <- apply_matrix(student_results, mn=mean, md=median(.m))
+  ct <- apply_matrix(student_results, mn=mean, md=~median(.m))
   ct_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
                      M <- matrix_elm(student_results,m)
@@ -1367,7 +1628,7 @@ test_that("matrixset matrix loop works", {
 
 
 
-  ct <- apply_matrix(student_results, mn=mean, reg = lm(.m ~ teacher + class))
+  ct <- apply_matrix(student_results, mn=mean, reg = ~lm(.m ~ teacher + class))
   ct_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
                      .m <- matrix_elm(student_results,m)
@@ -1383,7 +1644,7 @@ test_that("matrixset matrix loop works", {
 
 
 
-  ct <- apply_matrix(student_results, mn=mean, reg = lm(.m ~ teacher + class),
+  ct <- apply_matrix(student_results, mn=mean, reg = ~lm(.m ~ teacher + class),
                  .matrix = 2)
   ct_ref <- lapply(2,
                    function(m) {
@@ -1401,7 +1662,7 @@ test_that("matrixset matrix loop works", {
 
 
   e <- apply_matrix(student_results,
-                   mn = {
+                   mn = ~{
                      mm <- .m
                      mean(mm)
                    })
@@ -1418,7 +1679,7 @@ test_that("matrixset matrix loop works", {
 
 
   e <- apply_matrix(student_results,
-                   s={
+                   s=~{
                      .m + school_average + previous_year_score
                    })
 
@@ -1437,8 +1698,8 @@ test_that("matrixset matrix loop works", {
 
 
 
-  fc <- apply_matrix_dfl(student_results, FC = rowMeans(.m),
-                         FC_rob = apply(.m, 1, median))
+  fc <- apply_matrix_dfl(student_results, FC = ~rowMeans(.m),
+                         FC_rob = ~apply(.m, 1, median))
   fc_ref <- lapply(seq(nmatrix(student_results)),
                   function(m) {
                     .m <- matrix_elm(student_results,m)
@@ -1452,15 +1713,15 @@ test_that("matrixset matrix loop works", {
   expect_identical(fc, fc_ref)
 
 
-  expect_error(apply_matrix_dfl(student_results, FC = rowMeans(.m),
-                                FC_rob = apply(.m, 2, median)),
+  expect_error(apply_matrix_dfl(student_results, FC = ~rowMeans(.m),
+                                FC_rob = ~apply(.m, 2, median)),
                "vectors must be of the same length")
 
 
 
 
-  fc <- apply_matrix_dfw(student_results, FC = rowMeans(.m),
-                         FC_rob = apply(.m, 1, median))
+  fc <- apply_matrix_dfw(student_results, FC = ~rowMeans(.m),
+                         FC_rob = ~apply(.m, 1, median))
   fc_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
                      .m <- matrix_elm(student_results,m)
@@ -1481,14 +1742,14 @@ test_that("matrixset matrix loop works", {
 
 
   # .data
-  rg <- apply_matrix(student_results, reg = unname(coef(lm(.m ~ .data[["teacher"]] + class))))
-  rg_ref <- apply_matrix(student_results, reg = unname(coef(lm(.m ~ teacher + class))))
+  rg <- apply_matrix(student_results, reg = ~unname(coef(lm(.m ~ .data[["teacher"]] + class))))
+  rg_ref <- apply_matrix(student_results, reg = ~unname(coef(lm(.m ~ teacher + class))))
   expect_identical(rg, rg_ref)
 
 
 
   previous_year_score <- 0.5
-  avr <- apply_matrix(student_results, av=mean(c(.m, previous_year_score)))
+  avr <- apply_matrix(student_results, av=~mean(c(.m, previous_year_score)))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                     function(m) {
                       M <- matrix_elm(student_results,m)
@@ -1502,7 +1763,7 @@ test_that("matrixset matrix loop works", {
 
 
   previous_year_score <- 0.5
-  avr <- apply_matrix(student_results, av=mean(c(.m, .env$previous_year_score)))
+  avr <- apply_matrix(student_results, av=~mean(c(.m, .env$previous_year_score)))
   avr_ref <- lapply(seq(nmatrix(student_results)),
                     function(m) {
                       M <- matrix_elm(student_results,m)
@@ -1615,37 +1876,37 @@ test_that("matrixset matrix loop works", {
   expect_identical(grmn, mn_ref)
 
 
-  # grmn <- apply_matrix_dfl(column_group_by(student_results, program), FC = colMeans(.m),
-  #                          FC_rob = apply(.m, 2, median), .force_name = TRUE)
-  # grs <- column_group_meta(column_group_by(student_results, program))
-  # mn_ref <- lapply(seq(nmatrix(student_results)),
-  #                  function(m) {
-  #                    ans <- grs
-  #                    grmn_ref <- lapply(grs$.rows, function(gr) {
-  #                      M <- matrix_elm(student_results,m)
-  #                      Mgr <- M[, gr, drop = FALSE]
-  #                      colMeans(Mgr)
-  #                    })
-  #                    ans$FC <- grmn_ref
-  #
-  #                    grmn_ref <- lapply(grs$.rows, function(gr) {
-  #                      M <- matrix_elm(student_results,m)
-  #                      Mgr <- M[, gr, drop = FALSE]
-  #                      apply(Mgr, 2, median)
-  #
-  #                    })
-  #                    ans$FC_rob <- grmn_ref
-  #                    ans$.rows <- NULL
-  #                    ans %>% tidyr::unnest_longer(c(FC, FC_rob)) %>%
-  #                      dplyr::select(program, FC.name = FC_id, FC,
-  #                                    FC_rob.name = FC_rob_id, FC_rob) %>%
-  #                      dplyr::mutate(FC = unname(FC), FC_rob = unname(FC_rob))
-  #                  })
-  # names(mn_ref) <- matrixnames(student_results)
-  # expect_identical(grmn, mn_ref)
+  grmn <- apply_matrix_dfl(column_group_by(student_results, program), FC = ~colMeans(.m),
+                           FC_rob = ~apply(.m, 2, median), .force_name = TRUE)
+  grs <- column_group_meta(column_group_by(student_results, program))
+  mn_ref <- lapply(seq(nmatrix(student_results)),
+                   function(m) {
+                     ans <- grs
+                     grmn_ref <- lapply(grs$.rows, function(gr) {
+                       M <- matrix_elm(student_results,m)
+                       Mgr <- M[, gr, drop = FALSE]
+                       colMeans(Mgr)
+                     })
+                     ans$FC <- grmn_ref
+
+                     grmn_ref <- lapply(grs$.rows, function(gr) {
+                       M <- matrix_elm(student_results,m)
+                       Mgr <- M[, gr, drop = FALSE]
+                       apply(Mgr, 2, median)
+
+                     })
+                     ans$FC_rob <- grmn_ref
+                     ans$.rows <- NULL
+                     ans %>% tidyr::unnest_longer(c(FC, FC_rob)) %>%
+                       dplyr::select(program, FC.name = FC_id, FC,
+                                     FC_rob.name = FC_rob_id, FC_rob) %>%
+                       dplyr::mutate(FC = unname(FC), FC_rob = unname(FC_rob))
+                   })
+  names(mn_ref) <- matrixnames(student_results)
+  expect_identical(grmn, mn_ref)
 
 
-  grmn <- apply_matrix_dfl(column_group_by(student_results, program), FC = rowMeans(.m))
+  grmn <- apply_matrix_dfl(column_group_by(student_results, program), FC = ~rowMeans(.m))
   grs <- column_group_meta(column_group_by(student_results, program))
   mn_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
@@ -1664,7 +1925,7 @@ test_that("matrixset matrix loop works", {
   expect_identical(grmn, mn_ref)
 
 
-  grfc <- apply_matrix_dfl(row_group_by(student_results, class, teacher), FC = colMeans(.m))
+  grfc <- apply_matrix_dfl(row_group_by(student_results, class, teacher), FC = ~colMeans(.m))
   grs <- row_group_meta(row_group_by(student_results, class, teacher))
   fc_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
@@ -1684,8 +1945,8 @@ test_that("matrixset matrix loop works", {
 
 
 
-  grfc <- apply_matrix_dfl(row_group_by(student_results, class, teacher), FC = rowMeans(.m),
-                           FC_rob = apply(.m, 1, mean))
+  grfc <- apply_matrix_dfl(row_group_by(student_results, class, teacher), FC = ~rowMeans(.m),
+                           FC_rob = ~apply(.m, 1, mean))
   grs <- row_group_meta(row_group_by(student_results, class, teacher))
   fc_ref <- lapply(seq(nmatrix(student_results)),
                    function(m) {
@@ -1711,41 +1972,43 @@ test_that("matrixset matrix loop works", {
   expect_identical(grmn, mn_ref)
 
 
-  # grfc <- apply_matrix_dfl(column_group_by(row_group_by(student_results, teacher), program), FC = colMeans(.m),
-  #                          FC_rob = apply(.m, 2, median), .force_name = TRUE)
-  # grs <- column_group_by(row_group_by(student_results, teacher), program)
-  # grs_row <- row_group_meta(grs)
-  # grs_col <- column_group_meta(grs)
-  # fc_ref <- lapply(seq(nmatrix(student_results)),
-  #                  function(m) {
-  #                    ans <- grs_row
-  #                    M <- matrix_elm(student_results,m)
-  #                    ans$.rows <- NULL
-  #                    grmn_ref <- lapply(grs_row$.rows, function(grr) {
-  #                      lapply(grs_col$.rows, function(grc) {
-  #                        colMeans(M[grr, grc, drop = FALSE])
-  #                      })
-  #                    })
-  #                    ans$FC <- grmn_ref
-  #
-  #                    grmn_ref <- lapply(grs_row$.rows, function(grr) {
-  #                      lapply(grs_col$.rows, function(grc) {
-  #                        apply(M[grr, grc, drop = FALSE], 2, median)
-  #                      })
-  #                    })
-  #                    ans$FC_rob <- grmn_ref
-  #
-  #                    ans %>%
-  #                      tidyr::unnest(c(FC, FC_rob)) %>%
-  #                      tidyr::unnest_longer(c(FC, FC_rob)) %>%
-  #                      dplyr::left_join(column_info(student_results) %>%
-  #                                         dplyr::select(FC_id=.colname, program)) %>%
-  #                      dplyr::select(teacher, program, FC.name=FC_id, FC,
-  #                                    FC_rob.name=FC_rob_id, FC_rob) %>%
-  #                      dplyr::mutate(FC=unname(FC), FC_rob=unname(FC_rob))
-  #                  })
-  # names(fc_ref) <- matrixnames(student_results)
-  # expect_identical(grfc, fc_ref)
+  grfc <- apply_matrix_dfl(column_group_by(row_group_by(student_results, teacher), program),
+                           FC = ~colMeans(.m),
+                           FC_rob = ~apply(.m, 2, median), .force_name = TRUE)
+  grs <- column_group_by(row_group_by(student_results, teacher), program)
+  grs_row <- row_group_meta(grs)
+  grs_col <- column_group_meta(grs)
+  fc_ref <- lapply(seq(nmatrix(student_results)),
+                   function(m) {
+                     ans <- grs_row
+                     M <- matrix_elm(student_results,m)
+                     ans$.rows <- NULL
+                     grmn_ref <- lapply(grs_row$.rows, function(grr) {
+                       lapply(grs_col$.rows, function(grc) {
+                         colMeans(M[grr, grc, drop = FALSE])
+                       })
+                     })
+                     ans$FC <- grmn_ref
+
+                     grmn_ref <- lapply(grs_row$.rows, function(grr) {
+                       lapply(grs_col$.rows, function(grc) {
+                         apply(M[grr, grc, drop = FALSE], 2, median)
+                       })
+                     })
+                     ans$FC_rob <- grmn_ref
+
+                     ans %>%
+                       tidyr::unnest(c(FC, FC_rob)) %>%
+                       tidyr::unnest_longer(c(FC, FC_rob)) %>%
+                       dplyr::left_join(column_info(student_results) %>%
+                                          dplyr::select(FC_id=.colname, program),
+                                        by = "FC_id") %>%
+                       dplyr::select(teacher, program, FC.name=FC_id, FC,
+                                     FC_rob.name=FC_rob_id, FC_rob) %>%
+                       dplyr::mutate(FC=unname(FC), FC_rob=unname(FC_rob))
+                   })
+  names(fc_ref) <- matrixnames(student_results)
+  expect_identical(grfc, fc_ref)
 
 
 
@@ -1759,25 +2022,25 @@ test_that("matrixset matrix loop works", {
 
 
 
-  # grmn <- apply_matrix_dfw(column_group_by(student_results, program), FC = colMeans(.m),
-  #                          FC_rob = apply(.m, 2, median), .force_name = TRUE)
-  # mn_ref <- apply_matrix_dfl(column_group_by(student_results, program), FC = colMeans(.m),
-  #                            FC_rob = apply(.m, 2, median), .force_name = TRUE) %>%
-  #   lapply(function(m) {
-  #     m %>% tidyr::pivot_wider(names_from = c(FC.name, FC_rob.name),
-  #                              values_from = c(FC, FC_rob),
-  #                              names_glue = "{.value} {FC.name}")
-  #   })
-  # nms <- unlist(unique(lapply(grmn, names)))
-  # nms_ref <- unlist(unique(lapply(mn_ref, names)))
-  # expect_true(all(nms %in% nms_ref))
-  # expect_true(all(nms_ref %in% nms))
-  # mn_ref <- purrr::map2(mn_ref, grmn, ~ .x[, names(.y)])
-  # expect_identical(grmn, mn_ref)
+  grmn <- apply_matrix_dfw(column_group_by(student_results, program), FC = ~colMeans(.m),
+                           FC_rob = ~apply(.m, 2, median), .force_name = TRUE)
+  mn_ref <- apply_matrix_dfl(column_group_by(student_results, program), FC = ~colMeans(.m),
+                             FC_rob = ~apply(.m, 2, median), .force_name = TRUE) %>%
+    lapply(function(m) {
+      m %>% tidyr::pivot_wider(names_from = c(FC.name, FC_rob.name),
+                               values_from = c(FC, FC_rob),
+                               names_glue = "{.value} {FC.name}")
+    })
+  nms <- unlist(unique(lapply(grmn, names)))
+  nms_ref <- unlist(unique(lapply(mn_ref, names)))
+  expect_true(all(nms %in% nms_ref))
+  expect_true(all(nms_ref %in% nms))
+  mn_ref <- purrr::map2(mn_ref, grmn, ~ .x[, names(.y)])
+  expect_identical(grmn, mn_ref)
 
 
-  fc <- apply_matrix_dfw(column_group_by(student_results, program), FC = rowMeans(.m))
-  fc_ref <- apply_matrix_dfl(column_group_by(student_results, program), FC = rowMeans(.m)) %>%
+  fc <- apply_matrix_dfw(column_group_by(student_results, program), FC = ~rowMeans(.m))
+  fc_ref <- apply_matrix_dfl(column_group_by(student_results, program), FC = ~rowMeans(.m)) %>%
     lapply(function(m) {
       m %>% tidyr::pivot_wider(names_from = FC.name, values_from = FC,
                                names_glue = "{.value} {FC.name}")
@@ -1787,9 +2050,9 @@ test_that("matrixset matrix loop works", {
 
 
   fc <- apply_matrix_dfw(row_group_by(student_results, class, teacher),
-                         FC = colMeans(.m))
+                         FC = ~colMeans(.m))
   fc_ref <- apply_matrix_dfl(row_group_by(student_results, class, teacher),
-                             FC = colMeans(.m)) %>%
+                             FC = ~colMeans(.m)) %>%
     lapply(function(m) {
       m %>% tidyr::pivot_wider(names_from = FC.name, values_from = FC,
                                names_glue = "{.value} {FC.name}")
@@ -1797,10 +2060,10 @@ test_that("matrixset matrix loop works", {
   expect_identical(fc, fc_ref)
 
 
-  mn <- apply_matrix_dfw(row_group_by(student_results, class, teacher), FC = rowMeans(.m),
-                         FC_rob = rowMeans(.m))
-  mn_ref <- apply_matrix_dfl(row_group_by(student_results, class, teacher), FC = rowMeans(.m),
-                             FC_rob = rowMeans(.m)) %>%
+  mn <- apply_matrix_dfw(row_group_by(student_results, class, teacher), FC = ~rowMeans(.m),
+                         FC_rob = ~rowMeans(.m))
+  mn_ref <- apply_matrix_dfl(row_group_by(student_results, class, teacher), FC = ~rowMeans(.m),
+                             FC_rob = ~rowMeans(.m)) %>%
     lapply(function(m) {
       m %>% tidyr::pivot_wider(names_from = c(FC.name, FC_rob.name),
                                values_from = c(FC, FC_rob),
@@ -1814,23 +2077,23 @@ test_that("matrixset matrix loop works", {
   expect_identical(mn, mn_ref)
 
 
-  # ct <- apply_matrix_dfw(column_group_by(row_group_by(student_results, teacher), program),
-  #                        FC = colMeans(.m),
-  #                        FC_rob = apply(.m, 2, median), .force_name = TRUE)
-  # ct_ref <- apply_matrix_dfl(column_group_by(row_group_by(student_results, teacher), program),
-  #                            FC = colMeans(.m),
-  #                            FC_rob = apply(.m, 2, median), .force_name = TRUE) %>%
-  #   lapply(function(m) {
-  #     m %>% tidyr::pivot_wider(names_from = c(FC.name, FC_rob.name),
-  #                              values_from = c(FC, FC_rob),
-  #                              names_glue = "{.value} {FC.name}")
-  #   })
-  # nms <- unlist(unique(lapply(ct, names)))
-  # nms_ref <- unlist(unique(lapply(ct_ref, names)))
-  # expect_true(all(nms %in% nms_ref))
-  # expect_true(all(nms_ref %in% nms))
-  # ct_ref <- purrr::map2(ct_ref, ct, ~ .x[, names(.y)])
-  # expect_identical(ct, ct_ref)
+  ct <- apply_matrix_dfw(column_group_by(row_group_by(student_results, teacher), program),
+                         FC = ~colMeans(.m),
+                         FC_rob = ~apply(.m, 2, median), .force_name = TRUE)
+  ct_ref <- apply_matrix_dfl(column_group_by(row_group_by(student_results, teacher), program),
+                             FC = ~colMeans(.m),
+                             FC_rob = ~apply(.m, 2, median), .force_name = TRUE) %>%
+    lapply(function(m) {
+      m %>% tidyr::pivot_wider(names_from = c(FC.name, FC_rob.name),
+                               values_from = c(FC, FC_rob),
+                               names_glue = "{.value} {FC.name}")
+    })
+  nms <- unlist(unique(lapply(ct, names)))
+  nms_ref <- unlist(unique(lapply(ct_ref, names)))
+  expect_true(all(nms %in% nms_ref))
+  expect_true(all(nms_ref %in% nms))
+  ct_ref <- purrr::map2(ct_ref, ct, ~ .x[, names(.y)])
+  expect_identical(ct, ct_ref)
 
 })
 

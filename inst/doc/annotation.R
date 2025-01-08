@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -7,7 +7,7 @@ knitr::opts_chunk$set(
 ## ----setup, echo=FALSE, message=FALSE-----------------------------------------
 library(matrixset)
 
-## ---- message=FALSE-----------------------------------------------------------
+## ----message=FALSE------------------------------------------------------------
 library(tidyverse)
 animals <- as.matrix(MASS::Animals)
 log_animals <- log(animals)
@@ -36,7 +36,7 @@ ms
 ## -----------------------------------------------------------------------------
 row_info(ms) <- animal_info %>% rename(.rowname = Animal)
 
-## ---- results='hide'----------------------------------------------------------
+## ----results='hide'-----------------------------------------------------------
 matrixset(msr = animals, log_msr = log_animals) %>% 
     join_row_info(animal_info, by = c(".rowname" = "Animal"))
 

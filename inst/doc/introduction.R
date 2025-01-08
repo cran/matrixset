@@ -1,4 +1,4 @@
-## ---- include = FALSE, echo = FALSE, message = FALSE--------------------------
+## ----include = FALSE, echo = FALSE, message = FALSE---------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -9,8 +9,10 @@ library(matrixset)
 animals <- as.matrix(MASS::Animals)
 head(animals)
 
-## ---- error=TRUE--------------------------------------------------------------
+## ----error=TRUE---------------------------------------------------------------
+try({
 animals_ms <- matrixset(animals)
+})
 
 ## -----------------------------------------------------------------------------
 animals_ms <- matrixset(msr = animals)
@@ -32,7 +34,7 @@ identical(ms, ms2)
 animals_ms <- add_matrix(animals_ms, log_msr = log_animals)
 identical(ms, animals_ms)
 
-## ---- message = FALSE---------------------------------------------------------
+## ----message = FALSE----------------------------------------------------------
 library(tidyverse)
 animal_info <- MASS::Animals %>% 
   rownames_to_column("Animal") %>% 
@@ -76,6 +78,8 @@ animals_ms %>%
                                    TRUE ~ "oz")) %>% 
   column_info()
 
-## ---- error = TRUE------------------------------------------------------------
+## ----error = TRUE-------------------------------------------------------------
+try({
 animals_ms %>% annotate_column(.colname = NULL)
+})
 

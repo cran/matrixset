@@ -1,11 +1,11 @@
-## ---- include = FALSE, echo = FALSE, message = FALSE--------------------------
+## ----include = FALSE, echo = FALSE, message = FALSE---------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 library(matrixset)
 
-## ---- echo=FALSE, message=FALSE-----------------------------------------------
+## ----echo=FALSE, message=FALSE------------------------------------------------
 library(tidyverse)
 animals <- as.matrix(MASS::Animals)
 log_animals <- log(animals)
@@ -55,14 +55,14 @@ show_lst <- function(x) {
   })
 }
 
-## ---- message=FALSE-----------------------------------------------------------
+## ----message=FALSE------------------------------------------------------------
 library(magrittr)
 library(purrr)
 out <- animals_ms %>% 
    apply_matrix(exp,
-                mean(.m, trim=.1),
+                ~ mean(.m, trim=.1),
                 foo=asinh,
-                pow = 2^.m,
+                pow = ~ 2^.m,
                 reg = ~ {
                   is_alive <- !is_extinct
                   lm(.m ~ is_alive + class)
@@ -73,9 +73,9 @@ show_lst(out[[1]])
 ## -----------------------------------------------------------------------------
 out <- animals_ms %>% 
    apply_column(exp,
-                mean(.j, trim=.1),
+                ~ mean(.j, trim=.1),
                 foo=asinh,
-                pow = 2^.j,
+                pow = ~ 2^.j,
                 reg = ~ {
                   is_alive <- !is_extinct
                   lm(.j ~ is_alive + class)
@@ -86,9 +86,9 @@ out[[1]] %>% map(show_lst)
 animals_ms %>% 
   row_group_by(class) %>% 
   apply_matrix(exp,
-               mean(.m, trim=.1),
+               ~ mean(.m, trim=.1),
                foo=asinh,
-               pow = 2^.m,
+               pow = ~ 2^.m,
                reg = ~ {
                  is_alive <- !is_extinct
                  lm(.m ~ is_alive)
@@ -96,7 +96,7 @@ animals_ms %>%
 
 ## -----------------------------------------------------------------------------
 animals_ms %>% 
-    apply_matrix_dfl(mean(.m, trim=.1),
+    apply_matrix_dfl(~ mean(.m, trim=.1),
                      MAD=mad,
                      reg = ~ {
                          is_alive <- !is_extinct
@@ -105,7 +105,7 @@ animals_ms %>%
 
 ## -----------------------------------------------------------------------------
 animals_ms %>% 
-    apply_column_dfl(mean(.j, trim=.1),
+    apply_column_dfl(~ mean(.j, trim=.1),
                      MAD=mad,
                      reg = ~ {
                          is_alive <- !is_extinct
@@ -114,18 +114,18 @@ animals_ms %>%
 
 ## -----------------------------------------------------------------------------
 animals_ms %>% 
-    apply_row_dfl(rg = range(.i),
-                  qt = quantile(.i, probs = c(.25, .75)))   
+    apply_row_dfl(rg = ~ range(.i),
+                  qt = ~ quantile(.i, probs = c(.25, .75)))   
 
 ## -----------------------------------------------------------------------------
 animals_ms %>% 
-    apply_row_dfw(rg = range(.i),
-                  qt = quantile(.i, probs = c(.25, .75)))   
+    apply_row_dfw(rg = ~ range(.i),
+                  qt = ~ quantile(.i, probs = c(.25, .75)))   
 
 ## -----------------------------------------------------------------------------
 animals_ms %>% 
     row_group_by(class) %>% 
-    apply_matrix_dfl(n=current_n_row()) %>% 
+    apply_matrix_dfl(n = ~ current_n_row()) %>% 
     .$msr
 
 ## -----------------------------------------------------------------------------
@@ -144,7 +144,7 @@ reg_expr <- expr({
 })
 
 animals_ms %>% 
-    apply_column_dfl(mean(.j, trim=.1),
+    apply_column_dfl(~ mean(.j, trim=.1),
                      MAD=mad,
                      reg = ~ !!reg_expr)
 
