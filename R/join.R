@@ -263,6 +263,7 @@ fill_matrix <- function(m, margin, nr, nc, old_names, joined_names, compl_names,
     unlist(lapply(common, function(.x) which(.x == joined_names)))
   }
 
+  class_m <- class(m)
   if (margin == "row") {
 
     newm <- MATRIX(na_val, nrow = length(joined_names), ncol = nc, is_Matrix)
@@ -270,7 +271,9 @@ fill_matrix <- function(m, margin, nr, nc, old_names, joined_names, compl_names,
     colnames(newm) <- compl_names
     if (is_Matrix) {
       newm[] <- na_val
-      newm <- methods::as(newm, class(m))
+      newm <- if (class_m == "dgeMatrix"){
+        methods::as(methods::as(newm, "generalMatrix"), "unpackedMatrix")
+      } else methods::as(newm, class_m)
     }
     newm[pos, ] <- if (is.null(joined_names_unique)) {
       m
@@ -287,7 +290,9 @@ fill_matrix <- function(m, margin, nr, nc, old_names, joined_names, compl_names,
     colnames(newm) <- joined_names
     if (is_Matrix) {
       newm[] <- na_val
-      newm <- methods::as(newm, class(m))
+      newm <- if (class_m == "dgeMatrix"){
+        methods::as(methods::as(newm, "generalMatrix"), "unpackedMatrix")
+      } else methods::as(newm, class_m)
     }
     newm[, pos] <- if (is.null(joined_names_unique)) {
       m
@@ -940,11 +945,15 @@ sub_matrix <- function(m, margin, old_names, all_names, compl_names)
 #'
 #' # Groups are automatically adjusted
 #' sr_gr <- row_group_by(student_results, class)
-#' gr_orig <- row_group_meta(row_group_by(student_results, class)) |> tidyr::unnest(.rows)
+#' gr_orig_tmp <- row_group_meta(row_group_by(student_results, class))
+#' gr_orig <- tidyr::unnest(gr_orig_tmp, .rows)
 #' suppressWarnings(
-#'   new_gr <- join_row_info(sr_gr, meta, by = c(".rowname" = "sample", "class"),
-#'                           adjust = TRUE, names_glue = TRUE) |>
-#'    row_group_meta() |> tidyr::unnest(.rows)
+#'   {
+#'     jn <- join_row_info(sr_gr, meta, by = c(".rowname" = "sample", "class"),
+#'                       adjust = TRUE, names_glue = TRUE)
+#'     new_gr_tmp <- row_group_meta(jn)
+#'     new_gr <- tidyr::unnest(new_gr_tmp, .rows)
+#'   }
 #' )
 #' list(gr_orig, new_gr)
 #'
